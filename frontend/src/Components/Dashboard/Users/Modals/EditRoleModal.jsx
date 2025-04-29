@@ -4,6 +4,7 @@ import { useContext, useState } from 'react';
 import { putData } from '../../../../Services/FetchService';
 import CustomButton from '../../Buttons/CustomButton';
 import { DashboardContext } from '../../../../Pages/dashboard';
+import Swal from 'sweetalert2';
 
 const EditRoleModal = (props) => {
     const updateContext = useContext(UpdateContext);
@@ -40,13 +41,33 @@ const EditRoleModal = (props) => {
             });
 
             userContext.setUsers(updatedUsers);
-            props.setShowEditRoleModal(false);
+         
+            
+              Swal.fire({
+                            title: 'Success!',
+                            text: 'User role updated successfully!',
+                            icon: 'success',
+                            confirmButtonColor: '#7C3AED',
+                            confirmButtonText: 'OK'
+                          }).then(() => {
+                            props.setShowEditRoleModal(false);
+                          });
+            
         } catch (error) {
             dashboardContext.setDashboardErrorMessage(error.message);
             dashboardContext.setShowDashboardErrorModal(true);
             userContext.getUsers();
 
-            props.setShowEditRoleModal(false);
+            Swal.fire({
+                title: 'Update failed!',
+                text: error.message || 'Something went wrong while editing the role.',
+                icon: 'error',
+                confirmButtonColor: '#EF4444',
+                confirmButtonText: 'OK'
+              }).then(() => {
+                props.setShowEditRoleModal(false);
+              });
+            
         } 
     }
 

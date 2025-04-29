@@ -4,7 +4,7 @@ import { putData } from '../../../../Services/FetchService';
 import { UserContext } from '../UsersList';
 import CustomButton from '../../Buttons/CustomButton';
 import { DashboardContext } from '../../../../Pages/dashboard';
-
+import Swal from 'sweetalert2';
 const EditPasswordModal = (props) => {
     const updateContext = useContext(UpdateContext);
     const userContext = useContext(UserContext);
@@ -36,12 +36,32 @@ const EditPasswordModal = (props) => {
             const response = await putData('/backend/user/adminUpdatePassword', data);
             console.log(response);
 
-            props.setShowEditPasswordModal(false);
+            
+              Swal.fire({
+                            title: 'Success!',
+                            text: 'User password updated successfully!',
+                            icon: 'success',
+                            confirmButtonColor: '#7C3AED',
+                            confirmButtonText: 'OK'
+                          }).then(() => {
+                            props.setShowEditPasswordModal(false); // mbyll modalin pasi useri e klikoi OK
+                          });
+            
         } catch (error) {
             let messages = error.message.split(','); // Assuming messages are separated by commas
             let message = messages.join('');
             dashboardContext.setDashboardErrorMessage(message);
             dashboardContext.setShowDashboardErrorModal(true);
+             Swal.fire({
+                                        title: 'Update failed!',
+                                        text: error.message || 'Something went wrong while editing the role.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#EF4444',
+                                        confirmButtonText: 'OK'
+                                      }).then(() => {
+                                        props.setShowEditPasswordModal(false); 
+                                      });
+                                    
         }
     }
 

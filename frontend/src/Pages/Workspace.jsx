@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { validateAdmin, getAccessToken, ClearTokens } from '../Services/TokenService.jsx';
 import ModalProfile from '../Components/Modal/ModalProfile.jsx';
 import ModalChangePassword from '../Components/Modal/ModalChangePassword.jsx';
-
+import { FaTasks } from "react-icons/fa";
 const Workspace = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -41,9 +41,10 @@ const Workspace = () => {
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-100 flex flex-col">
       {/* Header */}
       <header className="w-full flex items-center justify-between px-8 py-4 bg-white shadow">
-        <button onClick={() => window.location.reload()} className="text-4xl font-extrabold text-purple-700">
-          TaskIt
-        </button>
+         <button onClick={() => navigate('/Preview')} className="text-5xl font-extrabold text-purple-700 flex items-center space-x-4">
+                <FaTasks className='text-4xl mt-1' />
+                 <span>TaskIt</span>
+                </button>
 
         <div className="flex items-center space-x-4 relative" ref={dropdownRef}>
           {isAdmin && (

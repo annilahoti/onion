@@ -5,7 +5,7 @@ import { postData } from '../../Services/FetchService.jsx';
 import { StoreTokens } from '../../Services/TokenService.jsx';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
-
+import { FaTasks } from "react-icons/fa";
 const Preview = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -143,8 +143,9 @@ const Preview = () => {
     <nav className="min-h-screen flex flex-col bg-gradient-to-br from-white to-gray-100">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4">
-        <button onClick={() => navigate('/Preview')} className="text-5xl font-extrabold text-purple-700">
-          TaskIt
+        <button onClick={() => navigate('/Preview')} className="text-5xl font-extrabold text-purple-700 flex items-center space-x-4">
+        <FaTasks className='text-4xl mt-1' />
+         <span>TaskIt</span>
         </button>
         <div className="hidden md:flex space-x-6">
           <button onClick={() => navigate('/AboutUs')} className="text-gray-600 hover:text-purple-700">About Us</button>

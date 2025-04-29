@@ -4,6 +4,7 @@ import { UserContext } from '../UsersList';
 import { putData } from '../../../../Services/FetchService';
 import CustomButton from '../../Buttons/CustomButton';
 import { DashboardContext } from '../../../../Pages/dashboard';
+import Swal from 'sweetalert2';
 
 const EditInfoModal = (props) => {
 
@@ -34,7 +35,7 @@ const EditInfoModal = (props) => {
                 lastName: lastName
             };
 
-            const response = await putData('/backend/user/adminUpdateUser', data);
+            const response = await putData('/backend/user/UpdateUser', data);
             console.log(response);
 
             //Nese ska error
@@ -60,7 +61,18 @@ const EditInfoModal = (props) => {
             userContext.setUsers(updatedUsers);
             
             //Mbyll modal-in per te perditesuar
-            props.setShowEditInfoModal(false);
+            
+
+            Swal.fire({
+                title: 'Success!',
+                text: 'User info updated successfully!',
+                icon: 'success',
+                confirmButtonColor: '#7C3AED',
+                confirmButtonText: 'OK'
+              }).then(() => {
+                props.setShowEditInfoModal(false); // mbyll modalin pasi useri e klikoi OK
+              });
+
         } catch (error) {
 
             //Nese ka error, trego pse nuk mund te editohej.
@@ -68,8 +80,17 @@ const EditInfoModal = (props) => {
             dashboardContext.setShowDashboardErrorModal(true);
             userContext.getUsers();
 
-            //Pastaj mbyll modal.
-            props.setShowEditInfoModal(false);
+             Swal.fire({
+                            title: 'Update failed!',
+                            text: error.message || 'Something went wrong while editing the role.',
+                            icon: 'error',
+                            confirmButtonColor: '#EF4444',
+                            confirmButtonText: 'OK'
+                          }).then(() => {
+                            props.setShowEditInfoModal(false);
+                          });
+                        
+            
             
         }
         
