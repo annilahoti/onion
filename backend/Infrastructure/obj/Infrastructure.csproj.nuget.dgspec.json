@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\anila\\OneDrive\\Desktop\\onion\\backend\\Infrastructure\\Infrastructure.csproj": {}
+    "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Infrastructure\\Infrastructure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\anila\\OneDrive\\Desktop\\onion\\backend\\Domain\\Domain.csproj": {
+    "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Domain\\Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\anila\\OneDrive\\Desktop\\onion\\backend\\Domain\\Domain.csproj",
+        "projectUniqueName": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Domain\\Domain.csproj",
         "projectName": "Domain",
-        "projectPath": "C:\\Users\\anila\\OneDrive\\Desktop\\onion\\backend\\Domain\\Domain.csproj",
+        "projectPath": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Domain\\Domain.csproj",
         "packagesPath": "C:\\Users\\anila\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\anila\\OneDrive\\Desktop\\onion\\backend\\Domain\\obj\\",
+        "outputPath": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Domain\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\anila\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -64,14 +64,14 @@
         }
       }
     },
-    "C:\\Users\\anila\\OneDrive\\Desktop\\onion\\backend\\Infrastructure\\Infrastructure.csproj": {
+    "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Infrastructure\\Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\anila\\OneDrive\\Desktop\\onion\\backend\\Infrastructure\\Infrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Infrastructure\\Infrastructure.csproj",
         "projectName": "Infrastructure",
-        "projectPath": "C:\\Users\\anila\\OneDrive\\Desktop\\onion\\backend\\Infrastructure\\Infrastructure.csproj",
+        "projectPath": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Infrastructure\\Infrastructure.csproj",
         "packagesPath": "C:\\Users\\anila\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\anila\\OneDrive\\Desktop\\onion\\backend\\Infrastructure\\obj\\",
+        "outputPath": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\anila\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -88,8 +88,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\anila\\OneDrive\\Desktop\\onion\\backend\\Domain\\Domain.csproj": {
-                "projectPath": "C:\\Users\\anila\\OneDrive\\Desktop\\onion\\backend\\Domain\\Domain.csproj"
+              "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Domain\\Domain.csproj": {
+                "projectPath": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Domain\\Domain.csproj"
               }
             }
           }
