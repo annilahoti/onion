@@ -1,7 +1,7 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Startup\\Startup.csproj": {}
+    "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\startup\\Startup.csproj": {}
   },
   "projects": {
     "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Application\\Application.csproj": {
@@ -244,14 +244,14 @@
         }
       }
     },
-    "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Startup\\Startup.csproj": {
+    "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\startup\\Startup.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Startup\\Startup.csproj",
+        "projectUniqueName": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\startup\\Startup.csproj",
         "projectName": "Startup",
-        "projectPath": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Startup\\Startup.csproj",
+        "projectPath": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\startup\\Startup.csproj",
         "packagesPath": "C:\\Users\\anila\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\Startup\\obj\\",
+        "outputPath": "C:\\Users\\anila\\OneDrive\\Desktop\\GitHub\\onion\\backend\\startup\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\anila\\AppData\\Roaming\\NuGet\\NuGet.Config",

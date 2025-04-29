@@ -1,87 +1,75 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
-
 const AboutUs = () => {
     const [menuOpen, setMenuOpen] = useState(false);
+    const navigate = useNavigate();
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
     };
 
-    const navigate = useNavigate();
-
-    return(
-        <div>
-            <div className="flex items-center justify-between mx-auto px-4 py-2.5">
-                <button  onClick={() => navigate(`/Preview`)} style={{ textAlign: 'left', padding: 30, color: 'dark-blue', fontSize: '40px', fontWeight: 'bold' }}>TaskIt</button>
-                {/* Desktop Menu */}
-                <div className="hidden md:flex md:space-x-8">
-                    <button  onClick={() => navigate(`/AboutUs`)} className="py-2 px-3 hover:bg-black-100 rounded dark:text-gray-400 dark:hover:text-black dark:hover:bg-gray-700 dark:hover:text-white">About Us</button>
-                    <button  onClick={() => navigate(`/ContactUs`)} className="py-2 px-3 hover:bg-black-100 rounded dark:text-gray-400 dark:hover:text-black dark:hover:bg-gray-700 dark:hover:text-white">Contact Us</button>
-                    <button onClick={() => navigate('/PrivacyPolicy')} className="py-2 px-3 hover:bg-black-100 rounded dark:text-gray-400 dark:hover:text-black dark:hover:bg-gray-700 dark:hover:text-white">Privacy Policy</button>
+    return (
+        <div className="flex flex-col min-h-screen bg-gradient-to-br from-white to-gray-100">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4">
+                <button onClick={() => navigate('/Preview')} className="text-5xl font-extrabold text-purple-700">
+                    TaskIt
+                </button>
+                <div className="hidden md:flex space-x-6">
+                    <button onClick={() => navigate('/AboutUs')} className="text-gray-600 hover:text-purple-700">About Us</button>
+                    <button onClick={() => navigate('/ContactUs')} className="text-gray-600 hover:text-purple-700">Contact Us</button>
+                    <button onClick={() => navigate('/PrivacyPolicy')} className="text-gray-600 hover:text-purple-700">Privacy Policy</button>
                 </div>
-
-   
-
-                {/* Desktop Login Button */}
-                <div className="hidden md:flex">
-                    <button onClick={() => navigate(`/Login`)} className="flex items-center justify-center px-5 py-3 rounded-md text-base font-medium text-center border border-transparent shadow-md" style={{backgroundImage: 'linear-gradient(115deg, #1a202c, #2d3748)'}}>
-                        <span className="text-white">Login</span>
-                    </button>
-                </div>
-
-                {/* Mobile Menu Button */}
                 <div className="md:hidden">
-                    <button onClick={toggleMenu} className="text-black">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/1000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    <button onClick={toggleMenu}>
+                        <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
                 </div>
             </div>
-            {/* Mobile Dropdown Menu */}
+
+            {/* Mobile Menu */}
             {menuOpen && (
-                <div className="md:hidden text-white" style={{ backgroundImage: 'linear-gradient(150deg, #2E3440, #414B5C)'}} >
-                    <ul className="flex flex-col items-start p-4 space-y-4 rounded-lg">
-                        <li><button  onClick={() => navigate(`/AboutUs`)} className="text-gray-400">About Us</button></li>
-                        <li><button onClick={() => navigate('/ContactUs')} className="text-gray-400">Contact Us</button></li>
-                        <li><button onClick={() => navigate('/PrivacyPolicy')} className="text-gray-400">Privacy Policy</button></li>
-                        <li>
-                            <button onClick={() => navigate(`/Login`)} className="w-full py-3 px-5 text-center text-white rounded-md" style={{ backgroundImage: 'linear-gradient(115deg,  #1a202c, #2d3748)'}}>
-                                Login
-                            </button>
-                        </li>
-                    </ul>
+                <div className="md:hidden bg-gray-800 text-white p-4 space-y-4">
+                    <button onClick={() => navigate('/AboutUs')} className="block">About Us</button>
+                    <button onClick={() => navigate('/ContactUs')} className="block">Contact Us</button>
+                    <button onClick={() => navigate('/PrivacyPolicy')} className="block">Privacy Policy</button>
                 </div>
             )}
 
+            {/* Main Content */}
+            <div className="flex-grow">
+                {/* Hero Section */}
+                <div className="h-[250px] bg-gradient-to-r from-purple-700 to-pink-600 flex flex-col justify-center items-center text-white text-center">
+                    <h1 className="text-4xl font-extrabold mb-2">About TaskIt</h1>
+                    <h2 className="text-lg font-light">Simple Task Management for Everyday Life.</h2>
+                </div>
 
-            <div style={{ height: '200px', backgroundColor: '#2E3440', textAlign: 'center', paddingTop: '40px'}}>
-                <h1 style={{fontSize: '2rem', fontWeight: 'bold', color: 'white'}}>About TaskIt</h1>
-                <h1 style={{fontSize: '1rem', color: 'white'}}>What’s behind the boards.</h1>
+                {/* Content Section */}
+                <div className="flex flex-col items-center text-center px-6 py-12 space-y-8">
+                    <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+                        The way your team works is unique — so is TaskIt.
+                    </h1>
+                    <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-4xl">
+                    At TaskIt, we believe that staying organized shouldn't be complicated. Our platform is designed for individuals who want a simple and efficient way to manage their daily tasks. 
+
+With TaskIt, you can create multiple custom lists, add and organize your tasks, set due dates to stay on track, and easily reorder or remove tasks as your priorities change. 
+
+Whether you're planning your day, managing personal projects, or just keeping track of what matters most, TaskIt gives you the flexibility and control to stay productive — all in a clean and user-friendly interface.
+
+No complex workspaces. No team management. Just you, your lists, and your goals — organized your way.
+                    </p>
+                </div>
             </div>
 
-           
-            <div style={{ paddingTop: '70px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#2E3440' }}>The way your team works is unique — so is TaskIt.</h1>
-                <p style={{ maxWidth: '1000px', width: '100%', fontSize: '1.4rem', lineHeight: '1.6', margin: '0 auto'}}>
-                    At TaskIt, we're passionate about helping individuals and teams stay organized, productive, and focused on what matters most. Our platform allows you to seamlessly manage your tasks, projects, 
-                    and collaborations in one easy-to-use interface. Whether you're planning a personal project, coordinating with a team, or 
-                    tracking progress on a large initiative, TaskIt provides the flexibility and efficiency you need to get things done.
-                    We believe in empowering people to achieve their goals without the clutter of unnecessary complexity. That's why TaskIt is designed to be intuitive, customizable, and responsive to the way you work. 
-                    With features like task boards, labels, lists, and real-time updates, our platform keeps you and your team on track no matter where you are.
-                </p>
-            </div>
-
-
-
-
-
+            {/* Footer */}
+            <footer className="text-center text-gray-500 text-sm py-4">
+                © 2024 TaskIt. All rights reserved.
+            </footer>
         </div>
     );
-
 }
 
 export default AboutUs;

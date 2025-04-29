@@ -1,89 +1,275 @@
 import React, { useState } from 'react';
 import mainimg from '../Preview/main.png';
 import { useNavigate } from 'react-router-dom';
+import { postData } from '../../Services/FetchService.jsx';
+import { StoreTokens } from '../../Services/TokenService.jsx';
+import { jwtDecode } from 'jwt-decode';
+import Swal from 'sweetalert2';
 
 const Preview = () => {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
 
-  const navigate = useNavigate();
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const validateLoginForm = () => {
+    if (!formData.email) {
+      setError('Please enter your email.');
+      return false;
+    }
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,4}$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address.');
+      return false;
+    }
+    if (!formData.password) {
+      setError('Please enter your password.');
+      return false;
+    }
+    return true;
+  };
+
+  const validateSignUpForm = () => {
+    var nameRegex = /^[a-zA-Z\s]+$/;
+    if (!nameRegex.test(formData.firstName.trim())) {
+      setError('Please enter a valid first name.');
+      return false;
+    }
+    if (!nameRegex.test(formData.lastName.trim())) {
+      setError('Please enter a valid last name.');
+      return false;
+    }
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,4}$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address.');
+      return false;
+    }
+    var passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*\W).{8,}$/;
+    if (!passwordRegex.test(formData.password)) {
+      setError('Password must have at least 8 characters, 1 uppercase letter, 1 number, and 1 special character.');
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      return false;
+    }
+    return true;
+  };
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateLoginForm()) return;
+
+    try {
+      const response = await postData('/backend/user/login', {
+        email: formData.email,
+        password: formData.password
+      });
+      StoreTokens(response.data.accessToken, response.data.refreshToken);
+      const decodedToken = jwtDecode(response.data.accessToken);
+      const role = decodedToken.Role;
+
+      if (role === "Admin") {
+        navigate('/dashboard');
+      } else {
+        navigate('/main/workspaces');
+      }
+    } catch (error) {
+      setError('Incorrect email and/or password!');
+      Swal.fire({
+        icon: "error",
+        title: "Login Failed",
+        text: "Incorrect email or password. Please try again.",
+      });
+    }
+  };
+
+  const handleSignUpSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateSignUpForm()) return;
+
+    const registerData = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      password: formData.password
+    };
+
+    try {
+      await postData('/backend/user/register', registerData);
+
+      const loginResponse = await postData('/backend/user/login', {
+        email: formData.email,
+        password: formData.password
+      });
+      StoreTokens(loginResponse.data.accessToken, loginResponse.data.refreshToken);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Welcome!',
+        text: 'Account created successfully.',
+      }).then(() => {
+        navigate('/main/workspaces');
+      });
+    } catch (error) {
+      if (error.response) {
+        setError(error.response.data[1]);
+      } else {
+        setError('Internal server error. Please try again later.');
+      }
+    }
+  };
 
   return (
-    <nav className="min-h-screen flex flex-col">
+    <nav className="min-h-screen flex flex-col bg-gradient-to-br from-white to-gray-100">
       {/* Header */}
-      <div className="flex items-center mx-auto px-4 py-2.5 w-full justify-between">
-                <div>
-                <button  onClick={() => navigate(`/Preview`)} style={{ textAlign: 'left', padding: 30, color: 'dark-blue', fontSize: '40px', fontWeight: 'bold' }}>TaskIt</button>
-                </div>
-                {/* Desktop Menu */}
-                <div className="hidden md:flex md:space-x-8">
-                    <button  onClick={() => navigate(`/AboutUs`)} className="py-2 px-3 hover:bg-black-100 rounded dark:text-gray-400 dark:hover:text-black dark:hover:bg-gray-700 dark:hover:text-white">About Us</button>
-                    <button  onClick={() => navigate(`/ContactUs`)} className="py-2 px-3 hover:bg-black-100 rounded dark:text-gray-400 dark:hover:text-black dark:hover:bg-gray-700 dark:hover:text-white">Contact Us</button>
-                    <button onClick={() => navigate('/PrivacyPolicy')} className="py-2 px-3 hover:bg-black-100 rounded dark:text-gray-400 dark:hover:text-black dark:hover:bg-gray-700 dark:hover:text-white">Privacy Policy</button>
-                </div>
-
-   
-
-                {/* Desktop Login Button */}
-                <div className="hidden md:flex">
-                    <button onClick={() => navigate(`/Login`)} className="flex items-center justify-center px-5 py-3 rounded-md text-base font-medium text-center border border-transparent shadow-md" style={{backgroundImage: 'linear-gradient(115deg, #1a202c, #2d3748)'}}>
-                        <span className="text-white">Login</span>
-                    </button>
-                </div>
-
-                {/* Mobile Menu Button */}
-                <div className="md:hidden">
-                    <button onClick={toggleMenu} className="text-black">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/1000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            {/* Mobile Dropdown Menu */}
-            {menuOpen && (
-                <div className="md:hidden text-white" style={{ backgroundImage: 'linear-gradient(150deg, #2E3440, #414B5C)'}} >
-                    <ul className="flex flex-col items-start p-4 space-y-4 rounded-lg">
-                        <li><button  onClick={() => navigate(`/AboutUs`)} className="text-gray-400">About Us</button></li>
-                        <li><button onClick={() => navigate('/ContactUs')} className="text-gray-400">Contact Us</button></li>
-                        <li><button onClick={() => navigate('/PrivacyPolicy')} className="text-gray-400">Privacy Policy</button></li>
-                        <li>
-                            <button onClick={() => navigate(`/Login`)} className="w-full py-3 px-5 text-center text-white rounded-md" style={{ backgroundImage: 'linear-gradient(115deg,  #1a202c, #2d3748)'}}>
-                                Login
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            )}
-
-      {/* Main Content */}
-      <div className="flex-grow flex flex-col md:flex-row items-center justify-between px-4 py-10 md:py-0">
-        {/* Text Section */}
-        <div className="w-full md:w-1/2 flex flex-col justify-start space-y-4">
-          <h1 className="text-black text-3xl md:text-4xl lg:text-5xl">
-            Taskit brings all your tasks, team, and tools in one place
-          </h1>
-          <h4 className="text-gray-700 text-lg md:text-xl lg:text-2xl">
-            Keep everything in the same place - even if your team isn’t.
-          </h4>
-          <div className="mt-8">
-            <button
-              onClick={() => navigate('/signup')}
-              className="px-6 py-3 bg-gradient-to-r from-gray-900 to-gray-700 text-white rounded-lg"
-            >
-              Sign Up here!
-            </button>
-          </div>
+      <div className="flex items-center justify-between px-6 py-4">
+        <button onClick={() => navigate('/Preview')} className="text-5xl font-extrabold text-purple-700">
+          TaskIt
+        </button>
+        <div className="hidden md:flex space-x-6">
+          <button onClick={() => navigate('/AboutUs')} className="text-gray-600 hover:text-purple-700">About Us</button>
+          <button onClick={() => navigate('/ContactUs')} className="text-gray-600 hover:text-purple-700">Contact Us</button>
+          <button onClick={() => navigate('/PrivacyPolicy')} className="text-gray-600 hover:text-purple-700">Privacy Policy</button>
         </div>
 
-        {/* Image Section */}
-        <div className="w-full md:w-1/2 flex justify-end md:justify-center mt-10 md:mt-0">
-          <img src={mainimg} alt="Description of the image" className="w-full max-w-lg md:max-w-none" />
+        <div className="md:hidden">
+          <button onClick={toggleMenu}>
+            <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="md:hidden px-6 py-4 bg-gray-800 text-white">
+          <ul className="space-y-4">
+            <li><button onClick={() => navigate('/AboutUs')}>About Us</button></li>
+            <li><button onClick={() => navigate('/ContactUs')}>Contact Us</button></li>
+            <li><button onClick={() => navigate('/PrivacyPolicy')}>Privacy Policy</button></li>
+            <li><button onClick={() => setIsSignUp(false)} className="bg-gray-700 w-full py-2 rounded">Login</button></li>
+          </ul>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="flex-grow flex flex-col md:flex-row items-center justify-between px-6 lg:px-20 py-10">
+        {/* Text Section */}
+        <div className="w-full md:w-1/2 space-y-6">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-gray-900">
+            Organize your tasks,<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-600">simplify your life</span>
+          </h1>
+          <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
+            Create custom lists, set due dates, and keep track of everything you need to do in one beautiful, easy-to-use app.
+          </p>
+          <ul className="flex flex-wrap gap-4 text-gray-800 text-md font-medium pt-2">
+            <li>✅ Custom lists</li>
+            <li>✅ Task due dates</li>
+            <li>✅ Task reordering</li>
+            <li>✅ Visual organization</li>
+          </ul>
+        </div>
+
+        {/* Form Section */}
+        <div className="w-full md:w-[650px] lg:w-[700px] mx-auto mt-10 md:mt-0 bg-white rounded-2xl p-10 lg:p-16 shadow-2xl">
+          <h2 className="text-3xl font-bold mb-6 text-gray-800">{isSignUp ? 'Create Account' : 'Get Started'}</h2>
+
+          <div className="flex mb-6 rounded-md overflow-hidden border border-gray-300">
+            <button onClick={() => setIsSignUp(false)} className={`w-1/2 py-3 text-lg font-semibold ${!isSignUp ? 'bg-gray-200' : 'bg-gray-100'}`}>
+              Login
+            </button>
+            <button onClick={() => setIsSignUp(true)} className={`w-1/2 py-3 text-lg font-semibold ${isSignUp ? 'bg-gray-200' : 'bg-gray-100'}`}>
+              Sign Up
+            </button>
+          </div>
+
+          <form onSubmit={isSignUp ? handleSignUpSubmit : handleLoginSubmit} className="space-y-4">
+            {isSignUp && (
+              <>
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="First Name"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  className="w-full p-4 border rounded font-semibold text-lg"
+                />
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Last Name"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  className="w-full p-4 border rounded font-semibold text-lg"
+                />
+              </>
+            )}
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className="w-full p-4 border rounded font-semibold text-lg"
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className="w-full p-4 border rounded font-semibold text-lg"
+            />
+            {isSignUp && (
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                className="w-full p-4 border rounded font-semibold text-lg"
+              />
+            )}
+            {error && (
+              <div className="text-red-600 text-center">{error}</div>
+            )}
+            <button
+              type="submit"
+              className="w-full py-4 text-white rounded-md text-lg font-bold"
+              style={{ backgroundImage: 'linear-gradient(115deg, #7f00ff, #7928ca)' }}
+            >
+              {isSignUp ? 'Sign Up' : 'Login'}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="text-center text-gray-500 text-sm py-4">
+        © 2024 TaskIt. All rights reserved.
+      </footer>
     </nav>
   );
 };
