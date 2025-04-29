@@ -12,7 +12,7 @@ import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 //import jwtDecode from 'jwt-decode';
 import { jwtDecode } from 'jwt-decode';
-
+import Workspace from './Workspace.jsx';
 import LoadingModal from '../Components/Modal/LoadingModal.jsx';
 
 import WithAuth from "../Services/WithAuth.jsx";
@@ -87,6 +87,7 @@ const Main = () => {
 
                         {/* Conditional rendering based on the value of `opened` */}
                         <div className='w-screen flex-grow h-full p-0 m-0'>
+                        {opened === 'workspace' && <Workspace/>}
                             {/* {opened === 'boards' && <Boards />}
                             {opened === 'board' && <Board />}
                             {opened === 'workspaceSettings' && <WorkspaceSettings/>}

@@ -102,6 +102,10 @@ export const isTokenExpiring = (expiryTime) => {
 //         return false;
 //     }
 // }
+export function ClearTokens() {
+    Cookies.remove('accessToken');
+    Cookies.remove('refreshToken');
+  }
 
 export const checkAndRefreshToken = async () => {
     try {

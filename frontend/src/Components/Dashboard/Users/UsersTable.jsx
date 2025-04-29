@@ -101,11 +101,7 @@ const UsersTable = () => {
                                     <td className="px-6 py-4">{user.role}</td>
                                     <td className="px-6 py-4">{user.isDeleted+""}</td>
                                     <td className="px-6 py-4">
-                                        <CustomButton 
-                                            onClick={() => handleRowClick(user.id)}
-                                            type="button"
-                                            text="Open"
-                                        />
+                                      
                                         <UpdateContext.Provider value={user}>
                                             <UpdateUserButton
                                                 onClick={(e) => {

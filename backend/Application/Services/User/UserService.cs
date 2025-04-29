@@ -78,6 +78,9 @@ public class UserService : IUserService
 
     public async Task<GetUserDto> GetUserById(string userId)
     {
+        
+    if (_userContext.Id != userId && _userContext.Role != "Admin")
+        throw new Exception("You are not authorized");
         var users = await _userRepository.GetUsers(userId: userId, isDeleted: false);
         var user = users.FirstOrDefault();
         if (user == null) throw new Exception("User not found");
@@ -116,25 +119,34 @@ public class UserService : IUserService
     }
 
     public async Task<GetUserDto> EditUser(EditUserInfoDto editUserInfoDto)
+{
+    if (_userContext.Id != editUserInfoDto.Id && _userContext.Role != "Admin")
+        throw new Exception("You are not authorized");
+
+    var users = await _userRepository.GetUsers(userId: editUserInfoDto.Id);
+    var user = users.FirstOrDefault();
+    if (user == null) throw new Exception("User not found");
+    if (user.IsDeleted) throw new Exception("User is deleted");
+
+
+    if (!string.Equals(user.Email, editUserInfoDto.Email, StringComparison.OrdinalIgnoreCase))
     {
-        if (_userContext.Id != editUserInfoDto.Id && _userContext.Role != "Admin") throw new Exception("You are not authorized");
-
-        var users = await _userRepository.GetUsers(userId: editUserInfoDto.Id);
-        var user = users.FirstOrDefault();
-        if (user == null) throw new Exception("User not found");
-        if (user.IsDeleted) throw new Exception("User is deleted");
-
         var emailUsers = await _userRepository.GetUsers(email: editUserInfoDto.Email);
         var emailUser = emailUsers.FirstOrDefault();
-        if (emailUser != null) throw new Exception("New email already in use");
-        
+
+        if (emailUser != null && emailUser.Id != editUserInfoDto.Id)
+            throw new Exception("New email already in use");
+        }
+
+    
         user.FirstName = editUserInfoDto.FirstName;
         user.LastName = editUserInfoDto.LastName;
         user.Email = editUserInfoDto.Email;
-        
+
         var updatedUser = await _userRepository.UpdateUser(user);
         return new GetUserDto(updatedUser);
     }
+
 
     public async Task<GetUserDto> UpdatePassword(EditUserPasswordDto editUserPasswordDto)
     {

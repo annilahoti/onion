@@ -92,7 +92,7 @@ public class UserController : ControllerBase
         }
     }
     
-    [HttpGet("adminUserID")]
+    [HttpGet("GetUserById")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public async Task<IActionResult> GetUserById(string userId)
     {
@@ -126,7 +126,7 @@ public class UserController : ControllerBase
         }
     }
     
-    [HttpPut("adminUpdateUser")]
+    [HttpPut("UpdateUser")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public async Task<IActionResult> EditUser(EditUserInfoDto editUserInfoDto)
     {
@@ -144,7 +144,7 @@ public class UserController : ControllerBase
         }
     }
     
-    [HttpPut("adminUpdatePassword")]
+    [HttpPut("AdminUpdatePassword")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public async Task<IActionResult> UpdatePassword(EditUserPasswordDto editUserPasswordDto)
     {
@@ -182,8 +182,8 @@ public class UserController : ControllerBase
     }
 
     [HttpPut("adminUpdateRole")]
-    // [Authorize(AuthenticationSchemes = "Bearer")]
-    // [Authorize(Policy = "AdminOnly")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> UpdateRole(EditUserRoleDto editUserRoleDto)
     {
         try

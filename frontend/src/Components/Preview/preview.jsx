@@ -89,9 +89,9 @@ const Preview = () => {
       const role = decodedToken.Role;
 
       if (role === "Admin") {
-        navigate('/dashboard');
+        navigate('/main/workspace');
       } else {
-        navigate('/main/workspaces');
+        navigate('/main/workspace');
       }
     } catch (error) {
       setError('Incorrect email and/or password!');
@@ -128,7 +128,7 @@ const Preview = () => {
         title: 'Welcome!',
         text: 'Account created successfully.',
       }).then(() => {
-        navigate('/main/workspaces');
+        navigate('/main/workspace');
       });
     } catch (error) {
       if (error.response) {

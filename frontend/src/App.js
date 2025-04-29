@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Login from './Pages/loginPage.jsx';
+
 import Dashboard from './Pages/dashboard.jsx';
 import Main from './Pages/Main.jsx'
 import Preview from './Components/Preview/preview.jsx';
@@ -7,8 +7,6 @@ import AboutUs from './Components/Preview/aboutus.jsx';
 import ContactUs from './Components/Preview/contactus.jsx';
 import PrivacyPolicy from './Components/Preview/PrivacyPolicy.jsx';
 
-
-import SignUpPage from './Pages/signUpPage.jsx';
 
 import React, { Suspense, lazy } from 'react';
 import LoadingModal from './Components/Modal/LoadingModal.jsx';
@@ -23,8 +21,7 @@ const App = () => {
           
           <Route path="/main/:opened/:workspaceId?/:boardId?/:taskId?" element={<Main/>}/>
           
-          <Route path="/login" element={<Login/>}/>
-          <Route path="/signup" element={<SignUpPage/>}/>
+    
           <Route path="/dashboard/*" element={<Dashboard/>}/>
           <Route path="/preview" element={<Preview/>}/>
           <Route path="/aboutus" element={<AboutUs/>}/>
