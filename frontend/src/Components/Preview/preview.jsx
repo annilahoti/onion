@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import mainimg from '../Preview/main.png';
+
 import { useNavigate } from 'react-router-dom';
 import { postData } from '../../Services/FetchService.jsx';
 import { StoreTokens } from '../../Services/TokenService.jsx';

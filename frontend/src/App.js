@@ -19,7 +19,7 @@ const App = () => {
       <Suspense fallback={<LoadingModal />}>
         <Routes>
           
-          <Route path="/main/:opened/:workspaceId?/:boardId?/:taskId?" element={<Main/>}/>
+          <Route path="/main/:opened" element={<Main/>}/>
           
     
           <Route path="/dashboard/*" element={<Dashboard/>}/>

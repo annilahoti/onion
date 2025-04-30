@@ -3,8 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { validateAdmin, getAccessToken, ClearTokens } from '../Services/TokenService.jsx';
 import ModalProfile from '../Components/Modal/ModalProfile.jsx';
 import ModalChangePassword from '../Components/Modal/ModalChangePassword.jsx';
-import { FaTasks, FaPlus, FaTrash, FaCalendarAlt, FaArrowLeft, FaArrowRight, FaArrowUp, FaArrowDown } from "react-icons/fa";
-import { FaShieldAlt } from "react-icons/fa";
+import {
+  FaTasks, FaPlus, FaTrash, FaCalendarAlt,
+  FaArrowLeft, FaArrowRight, FaArrowUp, FaArrowDown, FaShieldAlt
+} from "react-icons/fa";
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
 const Workspace = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -13,6 +18,11 @@ const Workspace = () => {
   const [modalPasswordOpen, setModalPasswordOpen] = useState(false);
   const [showNewListModal, setShowNewListModal] = useState(false);
   const dropdownRef = useRef(null);
+
+  const [addingTask, setAddingTask] = useState(false);
+  const [newTaskText, setNewTaskText] = useState('');
+  const [dueDate, setDueDate] = useState(null);
+  const [taskCompleted, setTaskCompleted] = useState(false);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -51,9 +61,9 @@ const Workspace = () => {
         <div className="flex items-center space-x-4 relative" ref={dropdownRef}>
           {isAdmin && (
             <button onClick={() => navigate('/Dashboard')} className="border border-gray-300 px-4 py-2 font-semibold rounded-md text-sm hover:bg-gray-100 flex items-center space-x-2">
-            <FaShieldAlt /> 
-            <span>Dashboard</span>
-          </button>
+              <FaShieldAlt />
+              <span>Dashboard</span>
+            </button>
           )}
           <button onClick={() => setProfileOpen(!profileOpen)} className="w-10 h-10 rounded-full bg-purple-500 text-white font-bold flex items-center justify-center">
             👤
@@ -71,7 +81,7 @@ const Workspace = () => {
         </div>
       </header>
 
-      {/* Main Workspace */}
+      {/* Main */}
       <main className="flex-grow px-8 py-10">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-gray-800">My Tasks</h1>
@@ -84,7 +94,6 @@ const Workspace = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* TODO: Map through lists dynamically */}
           <div className="bg-white rounded-xl shadow p-4 space-y-4">
             {/* List Header */}
             <div className="flex justify-between items-center">
@@ -96,32 +105,89 @@ const Workspace = () => {
               <button><FaTrash className="text-gray-400 hover:text-red-500" /></button>
             </div>
 
-            {/* Task */}
+            {/* Example task */}
             <div className="border rounded-lg p-3 space-y-2 bg-gray-50">
-              <div className="flex items-center space-x-2">
-                <input type="checkbox" />
-                <span className="flex-1">task1</span>
+  <div className="flex items-center space-x-2">
+    <input
+      type="checkbox"
+      checked={taskCompleted}
+      onChange={() => setTaskCompleted(!taskCompleted)}
+    />
+    <span
+      className={`flex-1 ${
+        taskCompleted ? 'line-through text-green-600' : ''
+      }`}
+    >
+      task1
+    </span>
 
-                {/* Task reorder arrows */}
-                <div className="flex flex-col items-center text-sm text-gray-500">
-                  <button><FaArrowUp className="hover:text-purple-600" /></button>
-                  <button><FaArrowDown className="hover:text-purple-600" /></button>
-                </div>
+    <div className="flex flex-col items-center text-sm text-gray-500">
+      <button><FaArrowUp className="hover:text-purple-600" /></button>
+      <button><FaArrowDown className="hover:text-purple-600" /></button>
+    </div>
 
-                <div className="flex items-center gap-1 ml-4">
-                  <FaCalendarAlt className="text-gray-500" />
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">May 1, 2025</span>
-                </div>
+    <div className="flex items-center gap-1 ml-4">
+      <FaCalendarAlt className="text-gray-500" />
+      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">May 1, 2025</span>
+    </div>
 
-                <button><FaTrash className="text-red-500 ml-2" /></button>
-              </div>
-            </div>
+    <button>
+      <FaTrash className="text-gray-400 hover:text-red-500 ml-2 cursor-pointer" />
+    </button>
+  </div>
+</div>
 
-            {/* Add Task */}
+            {/* Add Task Form */}
             <div className="border-t pt-2">
-              <button className="flex items-center text-sm text-gray-500 hover:text-purple-600">
-                <FaPlus className="mr-1" /> Add a task
-              </button>
+              {!addingTask ? (
+                <button
+                  className="flex items-center text-sm text-gray-500 hover:text-purple-600"
+                  onClick={() => setAddingTask(true)}
+                >
+                  <FaPlus className="mr-1" /> Add a task
+                </button>
+              ) : (
+                <div className="mt-2 space-y-2">
+                  <input
+                    type="text"
+                    value={newTaskText}
+                    onChange={(e) => setNewTaskText(e.target.value)}
+                    placeholder="Add a new task..."
+                    className="w-full p-2 border rounded"
+                  />
+                  <div className="flex items-center gap-2">
+                    <DatePicker
+                      selected={dueDate}
+                      onChange={(date) => setDueDate(date)}
+                      placeholderText="Add due date"
+                      className="border px-3 py-1 rounded w-full"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded"
+                      onClick={() => {
+                        console.log("New Task:", newTaskText, dueDate);
+                        setAddingTask(false);
+                        setNewTaskText('');
+                        setDueDate(null);
+                      }}
+                    >
+                      Add
+                    </button>
+                    <button
+                      className="border px-4 py-1 rounded hover:bg-gray-100"
+                      onClick={() => {
+                        setAddingTask(false);
+                        setNewTaskText('');
+                        setDueDate(null);
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -132,7 +198,7 @@ const Workspace = () => {
         © 2024 TaskIt. All rights reserved.
       </footer>
 
-      {/* Profile & Password Modals */}
+      {/* Modals */}
       {modalProfileOpen && (
         <ModalProfile
           onClose={() => setModalProfileOpen(false)}
@@ -145,8 +211,6 @@ const Workspace = () => {
       {modalPasswordOpen && (
         <ModalChangePassword onClose={() => setModalPasswordOpen(false)} />
       )}
-
-      {/* New List Modal */}
       {showNewListModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-4">

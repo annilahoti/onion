@@ -14,10 +14,8 @@ const Empty = () => {
             const accessToken = getAccessToken();
             if (accessToken) {
                 if (validateAdmin()) {
-                    navigate('/dashboard');
-                } else {
-                    navigate('/main/workspaces')
-                }
+                    navigate('/main/workspace');
+                } 
             } else {
                 navigate('/preview')
             }
