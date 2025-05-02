@@ -7,8 +7,13 @@ public class User
     //Properties
     [Key]
     public string Id { get; set; }
+    [Required(ErrorMessage = "First name is required.")]
+    [StringLength(50, MinimumLength = 2, ErrorMessage = "First name must be at least 2 characters.")]
     public string FirstName { get; set; }
-    public string LastName { get; set; }
+
+    [Required(ErrorMessage = "Last name is required.")]
+    [StringLength(50, MinimumLength = 2, ErrorMessage = "Last name must be at least 2 characters.")]
+    public string LastName { get; set; }    
     public string Email { get; set; }
     public string PasswordHash { get; set; }
     public DateTime DateCreated { get; set; }

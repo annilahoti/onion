@@ -49,7 +49,8 @@ const Preview = () => {
   };
 
   const validateSignUpForm = () => {
-    var nameRegex = /^[a-zA-Z\s]+$/;
+    var nameRegex = /^[a-zA-Z\s]{2,}$/;
+
     if (!nameRegex.test(formData.firstName.trim())) {
       setError('Please enter a valid first name.');
       return false;
