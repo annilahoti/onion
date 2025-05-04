@@ -1,4 +1,5 @@
-﻿using Application.Dtos.ListDtos;
+﻿using System.Text.RegularExpressions;
+using Application.Dtos.ListDtos;
 using Domain.Interfaces;
 
 namespace Application.Services.List;
@@ -60,11 +61,29 @@ public class ListService : IListService
 
     public async Task<ListDto> CreateList(CreateListDto createListDto)
     {
+        createListDto.Title = Regex.Replace(createListDto.Title?.Trim() ?? "", @"\s+", " ");
+        if (string.IsNullOrWhiteSpace(createListDto.Title))
+            throw new Exception("Title cannot be empty or whitespace only");
+        
         var user = (await _userRepository.GetUsers(userId: createListDto.OwnerId));
         if (!user.Any())
             throw new Exception("User not found");
+        
+        if ((_userContext.Id != createListDto.OwnerId) && _userContext.Role != "Admin")
+            throw new Exception("You are not authorized");
 
-        var existingLists = await _listRepository.GetLists(ownerId: createListDto.OwnerId);
+        var existingLists = (await _listRepository.GetLists(ownerId: createListDto.OwnerId)).Where(l => !l.IsDeleted);
+
+        foreach (var existing_list in existingLists)
+        {
+            if (existing_list.Title.Equals(createListDto.Title))
+                throw new Exception("You already have a list named: " + createListDto.Title);
+        }
+        
+        if (existingLists.Count() >= 50)
+            throw new Exception("You have reached the maximum number of lists allowed (50)");
+
+        
         var newIndex = existingLists.Count();
 
         var newList = new Domain.Entities.List(
@@ -92,6 +111,18 @@ public class ListService : IListService
         
         if ((_userContext.Id != list.OwnerId) && _userContext.Role != "Admin")
             throw new Exception("You are not authorized");
+        
+        updateListDto.Title = Regex.Replace(updateListDto.Title?.Trim() ?? "", @"\s+", " ");
+        if (string.IsNullOrWhiteSpace(updateListDto.Title))
+            throw new Exception("Title cannot be empty or whitespace only");
+        
+        var existingLists = (await _listRepository.GetLists(ownerId: _userContext.Id)).Where(l => !l.IsDeleted);
+
+        foreach (var existing_list in existingLists)
+        {
+            if (existing_list.Title.Equals(updateListDto.Title))
+                throw new Exception("You already have a list named: " + updateListDto.Title);
+        }
         
         list.ListId = updateListDto.ListId;
         list.Title = updateListDto.Title;
