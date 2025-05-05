@@ -3,6 +3,7 @@ using Application;
 using Application.Handlers;
 using Application.Services;
 using Application.Services.Authorization;
+using Application.Services.List;
 using Application.Services.Token;
 using Application.Services.User;
 using Application.Services.Utility;
@@ -90,12 +91,14 @@ builder.Services.AddHttpContextAccessor();
 
 //Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IListRepository, ListRepository>();
 
 //Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUtilityService, UtilityService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
+builder.Services.AddScoped<IListService, ListService>();
 
 
 
