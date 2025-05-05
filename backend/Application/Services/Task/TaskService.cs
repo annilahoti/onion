@@ -10,14 +10,15 @@ public class TaskService : ITaskService
     private readonly IListRepository _listRepository;
     private readonly IUserRepository _userRepository;
     private readonly UserContext _userContext;
-    private readonly AuthorizationService _authorizationService;
+    private readonly IAuthorizationService _authorizationService;
 
-    public TaskService(ITaskRepository taskRepository, IUserRepository userRepository, UserContext userContext, IListRepository listRepository)
+    public TaskService(ITaskRepository taskRepository, IUserRepository userRepository, UserContext userContext, IListRepository listRepository, IAuthorizationService authorizationService)
     {
         _taskRepository = taskRepository;
         _userRepository = userRepository;
         _userContext = userContext;
         _listRepository = listRepository;
+        _authorizationService = authorizationService;
     }
     
     public async Task<List<TaskDto>> GetAllTasks()
@@ -64,7 +65,6 @@ public class TaskService : ITaskService
         if (task == null) throw new Exception("Task not found");
 
         task.Title = updateTaskDto.Title;
-        task.Description = updateTaskDto.Description;
         task.DueDate = updateTaskDto.DueDate;
 
         var updatedTask = await _taskRepository.UpdateTask(task);

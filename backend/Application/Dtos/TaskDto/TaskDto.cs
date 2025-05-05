@@ -6,7 +6,6 @@ public class TaskDto
 {
     public int TaskId { get; set; }
     public string Title { get; set; }
-    public string Description { get; set; }
     public int ListId { get; set; }
     public int Index { get; set; }
     public DateTime DueDate { get; set; }
@@ -16,7 +15,6 @@ public class TaskDto
     {
         TaskId = task.TaskId;
         Title = task.Title;
-        Description = task.Description;
         ListId = task.ListId;
         Index = task.Index;
         DueDate = task.DueDate;
