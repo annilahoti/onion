@@ -118,5 +118,21 @@ public class TaskController : ControllerBase
             return StatusCode(500, e.Message);
         }
     }
-    
+
+    [HttpPut("ChangeTaskIndex")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
+    public async Task<IActionResult> ChangeTaskIndex(ChangeIndexTaskDto changeIndexTaskDto)
+    {
+        try
+        {
+            if(!ModelState.IsValid) return BadRequest(ModelState);
+            
+            var task = await _taskService.ChangeIndexTask(changeIndexTaskDto);
+            return Ok(task);
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, e.Message);
+        }
+    }
 }

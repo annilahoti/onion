@@ -64,6 +64,11 @@ public class TaskService : ITaskService
         var task = (await _taskRepository.GetTasks(taskId: updateTaskDto.TaskId)).FirstOrDefault();
         if (task == null) throw new Exception("Task not found");
 
+        if (updateTaskDto.DueDate.Date < DateTime.Today)
+        {
+            throw new Exception("Due date cannot be earlier than today");
+        }
+        
         task.Title = updateTaskDto.Title;
         task.DueDate = updateTaskDto.DueDate;
 
@@ -79,7 +84,15 @@ public class TaskService : ITaskService
         
         var list = (await _listRepository.GetLists(listId: createTaskDto.ListId)).FirstOrDefault();
         if (list == null) throw new Exception("List not found");
+        
+        var existingTasks = (await _taskRepository.GetTasks(listId: createTaskDto.ListId))
+            .Where(t => !t.IsDeleted)
+            .ToList();
 
+        if (existingTasks.Count >= 100)
+        {
+            throw new Exception("You cannot have more than 100 tasks in this list");
+        }
         
         var newIndex = list.Tasks.Count(); 
         var newTask = new Domain.Entities.Task(
@@ -96,8 +109,9 @@ public class TaskService : ITaskService
 
     public async Task<TaskDto> ChangeIndexTask(ChangeIndexTaskDto changeIndexTaskDto)
     {
-        var task = (await _taskRepository.GetTasks(taskId: changeIndexTaskDto.TaskId)).FirstOrDefault(t => !t.IsDeleted);
-        if (task == null) 
+        var task = (await _taskRepository.GetTasks(taskId: changeIndexTaskDto.TaskId))
+            .FirstOrDefault(t => !t.IsDeleted);
+        if (task == null)
             throw new Exception("Task not found");
 
         int oldIndex = task.Index;
@@ -105,22 +119,30 @@ public class TaskService : ITaskService
 
         if (oldIndex == newIndex)
             return new TaskDto(task);
-        
-        var allTasks = await _taskRepository.GetTasks(taskId: task.TaskId);
-        var orderedTasks = allTasks.Where(t => !t.IsDeleted).OrderBy(t => t.Index).ToList();
 
-        orderedTasks.Remove(task);
-        orderedTasks.Insert(newIndex, task);
+        // Fetch all tasks in the same list
+        var allTasks = (await _taskRepository.GetTasks(listId: task.ListId))
+            .Where(t => !t.IsDeleted)
+            .OrderBy(t => t.Index)
+            .ToList();
+
+        allTasks.Remove(task);
+        allTasks.Insert(newIndex, task);
         
-        for (int i = 0; i < orderedTasks.Count; i++)
+        if (newIndex < 0 || newIndex >= allTasks.Count) throw new Exception("Invalid index");
+
+        for (int i = 0; i < allTasks.Count; i++)
         {
-            orderedTasks[i].Index = i;
-            await _taskRepository.UpdateTask(orderedTasks[i]);
+            if (allTasks[i].Index != i) // Update only if index changed
+            {
+                allTasks[i].Index = i;
+                await _taskRepository.UpdateTask(allTasks[i]);
+            }
         }
 
         return new TaskDto(task);
-
     }
+
 
     public async Task<TaskDto> DeleteTask(TaskIdDto taskIdDto)
     {

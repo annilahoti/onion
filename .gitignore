@@ -16,3 +16,4 @@ Thumbs.db
 **/Migrations/*.cs
 
 
+backend/Infrastructure/infrastructureSettings.json

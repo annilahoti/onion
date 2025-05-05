@@ -8,4 +8,6 @@ public class ChangeIndexTaskDto
     public int TaskId { get; set; }
     [Required]
     public int newIndex { get; set; }
+    [Required]
+    public int ListId { get; set; }
 }
