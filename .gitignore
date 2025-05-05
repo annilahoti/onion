@@ -13,4 +13,5 @@ Thumbs.db
 # Build results
 **/bin/
 **/obj/
+**/Migrations/*.cs
 
