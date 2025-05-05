@@ -13,7 +13,7 @@ public class List
     public bool IsDeleted { get; set; }
     public string OwnerId { get; set; }
     public User User { get; set; }
-    //public List<Task> Tasks { get; set; }
+    public List<Task> Tasks { get; set; }
 
     public List(){}
 
