@@ -6,13 +6,14 @@ import Preview from './Components/Preview/preview.jsx';
 import AboutUs from './Components/Preview/aboutus.jsx';
 import ContactUs from './Components/Preview/contactus.jsx';
 import PrivacyPolicy from './Components/Preview/PrivacyPolicy.jsx';
-
+import useAutoLogout from './Services/useAutoLogout.js';
 
 import React, { Suspense, lazy } from 'react';
 import LoadingModal from './Components/Modal/LoadingModal.jsx';
 import Empty from './Pages/Empty.jsx';
 
 const App = () => {
+  useAutoLogout();
   return (
    <> 
       <BrowserRouter>
