@@ -137,19 +137,19 @@ public class TaskController : ControllerBase
     }
 
     [HttpPut("ToggleChecked")]
-[Authorize(AuthenticationSchemes = "Bearer")]
-public async Task<IActionResult> ToggleChecked([FromBody] ToggleCheckedDto dto)
-{
-    try
+    [Authorize(AuthenticationSchemes = "Bearer")]
+    public async Task<IActionResult> ToggleChecked([FromBody] ToggleCheckedDto dto)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
-        var result = await _taskService.ToggleChecked(dto);
-        return Ok(result);
+        try
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var result = await _taskService.ToggleChecked(dto);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
-    catch (Exception ex)
-    {
-        return StatusCode(500, ex.Message);
-    }
-}
 
 }
