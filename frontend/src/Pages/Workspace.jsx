@@ -357,9 +357,11 @@ const handleToggleChecked = async (taskId, isChecked) => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="flex overflow-x-auto gap-6 pb-4 max-w-full scrollbar-thin scrollbar-thumb-purple-400 scrollbar-track-purple-100 items-start">
+
+        
          {lists.map((list, index) => (
-  <div key={index} className="bg-white rounded-xl shadow p-4 space-y-4">
+  <div key={index} className="bg-white rounded-xl shadow p-4 space-y-4 w-[500px] shrink-0">
     <div className="flex justify-between items-center">
       <div className="flex items-center gap-2 w-full">
         {/* Reorder Arrows */}
@@ -439,14 +441,7 @@ const handleToggleChecked = async (taskId, isChecked) => {
       const isLast = task.index === Math.max(...visibleTasks.map(t => t.index));
 
       return (
-       <div key={task.taskId} className="flex justify-between items-center border p-2 rounded bg-gray-50">
-  <input
-    type="checkbox"
-    checked={task.isChecked}
-    onChange={(e) => handleToggleChecked(task.taskId, e.target.checked)}
-    className="mr-2"
-  />
-
+ <div key={task.taskId} className="flex justify-between items-center border p-2 rounded bg-gray-50">
   {editingTaskId === task.taskId ? (
     <div className="flex flex-col gap-2 w-full">
       <input
@@ -476,25 +471,37 @@ const handleToggleChecked = async (taskId, isChecked) => {
       </div>
     </div>
   ) : (
-    <span
-      className={`flex-1 cursor-pointer ${
-        task.isChecked ? 'text-green-600 line-through' : ''
-      }`}
-      onClick={() => {
-        setEditingTaskId(task.taskId);
-        setEditedTaskTitle(task.title);
-        setEditedTaskDueDate(
-          task.dueDate !== '0001-01-01T00:00:00'
-            ? new Date(task.dueDate)
-            : null
-        );
-      }}
-      title="Click to edit"
-    >
-      {task.title}
-    </span>
+    <div className="flex items-center gap-2 flex-1">
+    
+      <input
+        type="checkbox"
+        checked={task.isChecked}
+        onChange={(e) => handleToggleChecked(task.taskId, e.target.checked)}
+        className="form-checkbox h-5 w-5 text-green-600"
+      />
+
+      {/* ✅ Task title with green line-through if checked */}
+      <span
+       className={`cursor-pointer text-base font-medium flex-1 ${
+    task.isChecked ? 'text-green-600 line-through' : 'text-gray-800'
+        }`}
+        onClick={() => {
+          setEditingTaskId(task.taskId);
+          setEditedTaskTitle(task.title);
+          setEditedTaskDueDate(
+            task.dueDate !== '0001-01-01T00:00:00'
+              ? new Date(task.dueDate)
+              : null
+          );
+        }}
+        title="Click to edit"
+      >
+        {task.title}
+      </span>
+    </div>
   )}
 
+  {/* Due date and controls */}
   <div className="flex items-center gap-2">
     {task.dueDate !== '0001-01-01T00:00:00' && (
       <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -524,6 +531,7 @@ const handleToggleChecked = async (taskId, isChecked) => {
     </button>
   </div>
 </div>
+
       );
     })
 ) : (
