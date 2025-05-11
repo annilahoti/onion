@@ -17,9 +17,10 @@ public class ListRepository : IListRepository
     public async Task<IEnumerable<List>> GetLists(int? listId = null, string ownerId = null, int? index = null)
     {
         var query = _context.Lists
-            .Include(l => l.Tasks)
+            .Include(l => l.Tasks.Where(t=>!t.IsDeleted))
             .Include(l => l.User).AsQueryable();
 
+        
         if (listId.HasValue)
             query = query.Where(l => l.ListId == listId);
         if (index.HasValue)

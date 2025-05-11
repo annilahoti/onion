@@ -68,7 +68,7 @@ public class TaskController : ControllerBase
     }
     [Authorize(AuthenticationSchemes = "Bearer")]
     [HttpPost("CreateTask")]
-    public async Task<IActionResult> CreateTask(CreateTaskDto createTaskDto)
+   public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto createTaskDto)
     {
         try
         {
@@ -84,7 +84,7 @@ public class TaskController : ControllerBase
     }
     [Authorize(AuthenticationSchemes = "Bearer")]
     [HttpPut("UpdateTask")]
-    public async Task<IActionResult> UpdateTask(UpdateTaskDto updateTaskDto)
+    public async Task<IActionResult> UpdateTask([FromQuery]UpdateTaskDto updateTaskDto)
     {
         try
         {
@@ -135,4 +135,21 @@ public class TaskController : ControllerBase
             return StatusCode(500, e.Message);
         }
     }
+
+    [HttpPut("ToggleChecked")]
+[Authorize(AuthenticationSchemes = "Bearer")]
+public async Task<IActionResult> ToggleChecked([FromBody] ToggleCheckedDto dto)
+{
+    try
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        var result = await _taskService.ToggleChecked(dto);
+        return Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, ex.Message);
+    }
+}
+
 }

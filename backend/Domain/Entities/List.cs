@@ -25,6 +25,7 @@ public class List
         DateCreated = dateCreated;
         IsDeleted = isDeleted;
         OwnerId = ownerId;
+        
     }
 
     public List(string title, int index,DateTime dateCreated, bool isDeleted, string ownerId)

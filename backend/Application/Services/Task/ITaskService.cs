@@ -11,5 +11,5 @@ public interface ITaskService
     Task<TaskDto> DeleteTask(TaskIdDto taskIdDto);
     Task<TaskDto> CreateTask(CreateTaskDto createTaskDto);
     Task<TaskDto> ChangeIndexTask(ChangeIndexTaskDto changeIndexTaskDto);
-
+    Task<TaskDto> ToggleChecked(ToggleCheckedDto dto);
 }

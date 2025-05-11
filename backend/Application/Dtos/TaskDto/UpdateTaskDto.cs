@@ -11,7 +11,6 @@ public class UpdateTaskDto
     [MaxLength(50, ErrorMessage = "Title cannot exceed 120 characters")]
     public string Title { get; set; }
  
-    [Required]
-    
+   
     public DateTime DueDate { get; set; }
 }

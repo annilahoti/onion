@@ -41,23 +41,29 @@ public class ListService : IListService
 
         return new ListDto(list);
     }
+public async Task<List<ListDto>> GetListByOwnerId(string ownerId)
+{
+    var user = (await _userRepository.GetUsers(userId: ownerId));
+    if (!user.Any())
+        throw new Exception("User not found");
 
-    public async Task<List<ListDto>> GetListByOwnerId(string ownerId)
+    var lists = await _listRepository.GetLists(ownerId: ownerId);
+
+    if (lists == null)
+        throw new Exception("No List found");
+
+    var filteredLists = lists.Where(l => !l.IsDeleted).ToList();
+
+    var listDtos = new List<ListDto>();
+    foreach (var list in filteredLists)
     {
-        var user = (await _userRepository.GetUsers(userId: ownerId));
-        if (!user.Any())
-            throw new Exception("User not found");
-        
-        var lists = await _listRepository.GetLists(ownerId: ownerId);
-
-        if (lists == null)
-            throw new Exception("No List found");
-
-        var filteredLists = lists.Where(l => !l.IsDeleted).ToList();
-
-        var listDtos = filteredLists.Select(l => new ListDto(l)).ToList();
-        return listDtos;
+        // Filtro taskat që nuk janë të fshira
+        list.Tasks = list.Tasks?.Where(t => !t.IsDeleted).ToList();
+        listDtos.Add(new ListDto(list));
     }
+
+    return listDtos;
+}
 
     public async Task<ListDto> CreateList(CreateListDto createListDto)
     {

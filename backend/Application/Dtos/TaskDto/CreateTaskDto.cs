@@ -10,4 +10,6 @@ public class CreateTaskDto
     public string Title { get; set; }
     [Required]
     public int ListId { get; set; }
+    public DateTime DueDate { get; set; } = DateTime.MinValue;
+    
 }

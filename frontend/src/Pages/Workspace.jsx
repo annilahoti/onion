@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { validateAdmin, getAccessToken, ClearTokens } from '../Services/TokenService.jsx';
-import { getDataWithId, postData } from '../Services/FetchService.jsx';
+import { getDataWithId, postData, putData, deleteData } from '../Services/FetchService.jsx';
 import { jwtDecode } from 'jwt-decode';
 import ModalProfile from '../Components/Modal/ModalProfile.jsx';
 import ModalChangePassword from '../Components/Modal/ModalChangePassword.jsx';
@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import Swal from 'sweetalert2';
 
 const Workspace = () => {
   const navigate = useNavigate();
@@ -21,12 +22,19 @@ const Workspace = () => {
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [lists, setLists] = useState([]);
   const [newListName, setNewListName] = useState('');
+  const [editingListId, setEditingListId] = useState(null);
+  const [editedTitle, setEditedTitle] = useState('');
   const dropdownRef = useRef(null);
 
-  const [addingTask, setAddingTask] = useState(false);
-  const [newTaskText, setNewTaskText] = useState('');
-  const [dueDate, setDueDate] = useState(null);
-  const [taskCompleted, setTaskCompleted] = useState(false);
+const [newTaskInputs, setNewTaskInputs] = useState({});
+const [dueDates, setDueDates] = useState({});
+const [addingTaskListId, setAddingTaskListId] = useState(null);
+
+const [editingTaskId, setEditingTaskId] = useState(null);
+const [editedTaskTitle, setEditedTaskTitle] = useState('');
+const [editedTaskDueDate, setEditedTaskDueDate] = useState(null);
+
+
 
   useEffect(() => {
     const token = getAccessToken();
@@ -50,18 +58,28 @@ const Workspace = () => {
     };
   }, [navigate]);
 
-  const fetchLists = async () => {
-    const token = getAccessToken();
-    const decoded = jwtDecode(token);
-    const ownerId = decoded.Id;
+const fetchLists = async () => {
+  const token = getAccessToken();
+  const decoded = jwtDecode(token);
+  const ownerId = decoded.Id;
 
-    try {
-      const response = await getDataWithId('/GetListByOwnerId?ownerId', ownerId);
-      setLists(response.data);
-    } catch (error) {
-      console.error('Error fetching lists:', error);
-    }
-  };
+  try {
+    const response = await getDataWithId('/GetListByOwnerId?ownerId', ownerId);
+    console.log('Fetched lists:', response.data); // <- kjo ndihmon për debug
+   const sortedLists = [...response.data]
+  .map(list => ({
+    ...list,
+    tasks: (list.tasks || []).filter(task => !task.isDeleted)
+  }))
+  .sort((a, b) => a.index - b.index);
+setLists(sortedLists);
+
+
+  } catch (error) {
+    console.error('Error fetching lists:', error);
+  }
+};
+
 
   const handleLogout = () => {
     ClearTokens();
@@ -73,15 +91,227 @@ const Workspace = () => {
     const decoded = jwtDecode(token);
     const ownerId = decoded.Id;
 
+    if (!newListName.trim()) {
+      Swal.fire('Warning', 'List title cannot be empty.', 'warning');
+      return;
+    }
+
     try {
-      await postData(`/CreateList?Title=${newListName}&OwnerId=${ownerId}`, null);
+      await postData(`/CreateList?Title=${encodeURIComponent(newListName)}&OwnerId=${ownerId}`, null);
       await fetchLists();
       setShowNewListModal(false);
       setNewListName('');
     } catch (error) {
-      console.error('Error creating list:', error);
+      let message = 'Could not create list. Please try again later.';
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          message = error.response.data;
+        } else if (error.response.data.message) {
+          message = error.response.data.message;
+        } else if (error.response.data.title) {
+          message = error.response.data.title;
+        }
+      }
+      Swal.fire('Error', message, 'error');
     }
   };
+const handleUpdateList = async (listId, newTitle) => {
+  if (!newTitle.trim()) {
+    Swal.fire('Warning', 'List title cannot be empty.', 'warning');
+    return;
+  }
+
+  try {
+    await putData(`/UpdateList?ListId=${listId}&Title=${encodeURIComponent(newTitle)}`, null);
+    Swal.fire('Success', 'List title updated.', 'success');
+    setEditingListId(null);
+    setEditedTitle('');
+    await fetchLists();
+  } catch (error) {
+    let message = 'Could not update list. Please try again later.';
+    if (error.response?.data) {
+      if (typeof error.response.data === 'string') {
+        message = error.response.data;
+      } else if (error.response.data.message) {
+        message = error.response.data.message;
+      } else if (error.response.data.title) {
+        message = error.response.data.title;
+      }
+    }
+    Swal.fire('Error', message, 'error');
+  }
+};
+
+const handleDeleteList = async (listId) => {
+  const confirm = await Swal.fire({
+    title: 'Are you sure?',
+    text: 'This list will be permanently deleted.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#aaa',
+    confirmButtonText: 'Yes, delete it!',
+  });
+
+  if (confirm.isConfirmed) {
+    try {
+      await deleteData(`/DeleteList?ListId=${listId}`);
+      Swal.fire('Deleted!', 'Your list has been deleted.', 'success');
+      await fetchLists();
+    } catch (error) {
+      let message = 'Could not delete list.';
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          message = error.response.data;
+        } else if (error.response.data.message) {
+          message = error.response.data.message;
+        }
+      }
+      Swal.fire('Error', message, 'error');
+    }
+  }
+};
+
+const handleReorderList = async (listId, newIndex) => {
+  if (newIndex < 0 || newIndex >= lists.length) return;
+
+  try {
+    await putData(`/ChangeIndexList?ListId=${listId}&newIndex=${newIndex}`, null);
+    await fetchLists();
+  } catch (error) {
+    let message = 'Could not reorder list.';
+    if (error.response?.data) {
+      if (typeof error.response.data === 'string') {
+        message = error.response.data;
+      } else if (error.response.data.message) {
+        message = error.response.data.message;
+      }
+    }
+    Swal.fire('Error', message, 'error');
+  }
+};
+const handleCreateTask = async (listId) => {
+  const token = getAccessToken();
+  const decoded = jwtDecode(token);
+  const title = newTaskInputs[listId] || '';
+  const date = dueDates[listId];
+
+  if (!title.trim()) {
+    Swal.fire('Warning', 'Task title cannot be empty.', 'warning');
+    return;
+  }
+
+  const data = {
+    title,
+    listId,
+    dueDate: date ? date.toISOString() : '0001-01-01T00:00:00',
+  };
+
+  try {
+    await postData('/CreateTask', data);
+    await fetchLists(); // refresh data
+    setAddingTaskListId(null);
+    setNewTaskInputs({ ...newTaskInputs, [listId]: '' });
+    setDueDates({ ...dueDates, [listId]: null });
+  } catch (error) {
+    let message = 'Could not create task.';
+    if (error.response?.data) {
+      if (typeof error.response.data === 'string') {
+        message = error.response.data;
+      } else if (error.response.data.message) {
+        message = error.response.data.message;
+      }
+    }
+    Swal.fire('Error', message, 'error');
+  }
+};
+const handleUpdateTask = async (taskId) => {
+  if (!editedTaskTitle.trim()) {
+    Swal.fire('Warning', 'Task title cannot be empty.', 'warning');
+    return;
+  }
+
+  const title = encodeURIComponent(editedTaskTitle);
+  const dueDate = editedTaskDueDate
+    ? editedTaskDueDate.toISOString()
+    : '0001-01-01T00:00:00';
+
+  try {
+    await putData(`/UpdateTask?TaskId=${taskId}&Title=${title}&DueDate=${dueDate}`, null);
+    Swal.fire('Success', 'Task updated.', 'success');
+    await fetchLists();
+    setEditingTaskId(null);
+    setEditedTaskTitle('');
+    setEditedTaskDueDate(null);
+  } catch (error) {
+    let message = 'Could not update task.';
+    if (error.response?.data) {
+      if (typeof error.response.data === 'string') {
+        message = error.response.data;
+      } else if (error.response.data.message) {
+        message = error.response.data.message;
+      }
+    }
+    Swal.fire('Error', message, 'error');
+  }
+};
+
+const handleDeleteTask = async (taskId) => {
+  const confirm = await Swal.fire({
+    title: 'Are you sure?',
+    text: 'This task will be permanently deleted.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#aaa',
+    confirmButtonText: 'Yes, delete it!',
+  });
+
+  if (confirm.isConfirmed) {
+    try {
+      await deleteData(`/DeleteTask?TaskId=${taskId}`);
+      Swal.fire('Deleted!', 'Your task has been deleted.', 'success');
+      await fetchLists();
+    } catch (error) {
+      let message = 'Could not delete task.';
+      if (error.response?.data) {
+        message = typeof error.response.data === 'string'
+          ? error.response.data
+          : error.response.data.message || 'Something went wrong.';
+      }
+      Swal.fire('Error', message, 'error');
+    }
+  }
+};
+
+const handleReorderTask = async (taskId, newIndex, listId) => {
+  try {
+    await putData(`/ChangeTaskIndex?TaskId=${taskId}&newIndex=${newIndex}&ListId=${listId}`, null);
+    await fetchLists();
+  } catch (error) {
+    let message = 'Could not reorder task.';
+    if (error.response?.data) {
+      if (typeof error.response.data === 'string') {
+        message = error.response.data;
+      } else if (error.response.data.message) {
+        message = error.response.data.message;
+      }
+    }
+    Swal.fire('Error', message, 'error');
+  }
+};
+
+const handleToggleChecked = async (taskId, isChecked) => {
+  try {
+    await putData('/ToggleChecked', {
+      taskId,
+      isChecked,
+    });
+    await fetchLists();
+  } catch (err) {
+    Swal.fire('Error', 'Could not update task status.', 'error');
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-blue-50 flex flex-col">
@@ -128,99 +358,229 @@ const Workspace = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lists.map((list, index) => (
-            <div key={index} className="bg-white rounded-xl shadow p-4 space-y-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <button><FaArrowLeft className="text-gray-500 hover:text-purple-600" /></button>
-                  <button><FaArrowRight className="text-gray-500 hover:text-purple-600" /></button>
-                  <h2 className="text-lg font-bold ml-2">{list.title}</h2>
-                </div>
-                <button><FaTrash className="text-gray-400 hover:text-red-500" /></button>
-              </div>
+         {lists.map((list, index) => (
+  <div key={index} className="bg-white rounded-xl shadow p-4 space-y-4">
+    <div className="flex justify-between items-center">
+      <div className="flex items-center gap-2 w-full">
+        {/* Reorder Arrows */}
+        <button
+          onClick={() => handleReorderList(list.listId, index - 1)}
+          disabled={index === 0}
+          title="Move left"
+        >
+          <FaArrowLeft className={`hover:text-purple-600 ${index === 0 ? 'text-gray-300' : 'text-gray-500'}`} />
+        </button>
+
+        <button
+          onClick={() => handleReorderList(list.listId, index + 1)}
+          disabled={index === lists.length - 1}
+          title="Move right"
+        >
+          <FaArrowRight className={`hover:text-purple-600 ${index === lists.length - 1 ? 'text-gray-300' : 'text-gray-500'}`} />
+        </button>
+
+        {/* Title or Input */}
+        {editingListId === list.listId ? (
+          <>
+            <input
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              className="border px-2 py-1 rounded text-sm flex-grow"
+            />
+            <button
+              onClick={() => handleUpdateList(list.listId, editedTitle)}
+              className="text-green-600 text-sm font-semibold"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => {
+                setEditingListId(null);
+                setEditedTitle('');
+              }}
+              className="text-gray-500 text-sm underline"
+            >
+              Cancel
+            </button>
+          </>
+        ) : (
+          <h2
+            className="text-lg font-bold cursor-pointer flex-grow"
+            onClick={() => {
+              setEditingListId(list.listId);
+              setEditedTitle(list.title);
+            }}
+            title="Click to rename"
+          >
+            {list.title}
+          </h2>
+        )}
+      </div>
+
+      {/* Delete Button */}
+      <button
+        onClick={() => handleDeleteList(list.listId)}
+        title="Delete list"
+      >
+        <FaTrash className="text-gray-400 hover:text-red-500 ml-2" />
+      </button>
+    </div>
+
 
               {/* Tasks placeholder */}
               <div className="border rounded-lg p-3 space-y-2 bg-gray-50">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={taskCompleted}
-                    onChange={() => setTaskCompleted(!taskCompleted)}
-                  />
-                  <span className={`flex-1 ${taskCompleted ? 'line-through text-green-600' : ''}`}>
-                    task1
-                  </span>
+               {list.tasks && list.tasks.length > 0 ? (
+  list.tasks
+    .filter((task) => !task.isDeleted)
+    .sort((a, b) => a.index - b.index)
+    .map((task) => {
+      const visibleTasks = list.tasks.filter((t) => !t.isDeleted);
+      const isFirst = task.index === Math.min(...visibleTasks.map(t => t.index));
+      const isLast = task.index === Math.max(...visibleTasks.map(t => t.index));
 
-                  <div className="flex flex-col items-center text-sm text-gray-500">
-                    <button><FaArrowUp className="hover:text-purple-600" /></button>
-                    <button><FaArrowDown className="hover:text-purple-600" /></button>
-                  </div>
+      return (
+       <div key={task.taskId} className="flex justify-between items-center border p-2 rounded bg-gray-50">
+  <input
+    type="checkbox"
+    checked={task.isChecked}
+    onChange={(e) => handleToggleChecked(task.taskId, e.target.checked)}
+    className="mr-2"
+  />
 
-                  <div className="flex items-center gap-1 ml-4">
-                    <FaCalendarAlt className="text-gray-500" />
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                      May 1, 2025
-                    </span>
-                  </div>
+  {editingTaskId === task.taskId ? (
+    <div className="flex flex-col gap-2 w-full">
+      <input
+        value={editedTaskTitle}
+        onChange={(e) => setEditedTaskTitle(e.target.value)}
+        className="border p-1 rounded"
+      />
+      <DatePicker
+        selected={editedTaskDueDate}
+        onChange={(date) => setEditedTaskDueDate(date)}
+        className="border p-1 rounded"
+        placeholderText="Due date"
+      />
+      <div className="flex gap-2">
+        <button
+          onClick={() => handleUpdateTask(task.taskId)}
+          className="bg-green-500 text-white px-2 py-1 rounded"
+        >
+          Save
+        </button>
+        <button
+          onClick={() => setEditingTaskId(null)}
+          className="text-sm underline"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  ) : (
+    <span
+      className={`flex-1 cursor-pointer ${
+        task.isChecked ? 'text-green-600 line-through' : ''
+      }`}
+      onClick={() => {
+        setEditingTaskId(task.taskId);
+        setEditedTaskTitle(task.title);
+        setEditedTaskDueDate(
+          task.dueDate !== '0001-01-01T00:00:00'
+            ? new Date(task.dueDate)
+            : null
+        );
+      }}
+      title="Click to edit"
+    >
+      {task.title}
+    </span>
+  )}
 
-                  <button>
-                    <FaTrash className="text-gray-400 hover:text-red-500 ml-2 cursor-pointer" />
-                  </button>
-                </div>
-              </div>
+  <div className="flex items-center gap-2">
+    {task.dueDate !== '0001-01-01T00:00:00' && (
+      <div className="flex items-center gap-1 text-sm text-gray-500">
+        <FaCalendarAlt />
+        <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+      </div>
+    )}
+    <button
+      onClick={() => handleReorderTask(task.taskId, task.index - 1, list.listId)}
+      title="Move up"
+      disabled={isFirst}
+    >
+      <FaArrowUp className={`hover:text-purple-600 ${isFirst ? 'text-gray-300' : 'text-gray-400'}`} />
+    </button>
+    <button
+      onClick={() => handleReorderTask(task.taskId, task.index + 1, list.listId)}
+      title="Move down"
+      disabled={isLast}
+    >
+      <FaArrowDown className={`hover:text-purple-600 ${isLast ? 'text-gray-300' : 'text-gray-400'}`} />
+    </button>
+    <button
+      onClick={() => handleDeleteTask(task.taskId)}
+      title="Delete task"
+    >
+      <FaTrash className="text-gray-400 hover:text-red-500 ml-3" />
+    </button>
+  </div>
+</div>
+      );
+    })
+) : (
+  <div className="text-sm text-gray-400 italic">No tasks</div>
+)}
+
+</div>
 
               {/* Add Task Form */}
-              <div className="border-t pt-2">
-                {!addingTask ? (
-                  <button
-                    className="flex items-center text-sm text-gray-500 hover:text-purple-600"
-                    onClick={() => setAddingTask(true)}
-                  >
-                    <FaPlus className="mr-1" /> Add a task
-                  </button>
-                ) : (
-                  <div className="mt-2 space-y-2">
-                    <input
-                      type="text"
-                      value={newTaskText}
-                      onChange={(e) => setNewTaskText(e.target.value)}
-                      placeholder="Add a new task..."
-                      className="w-full p-2 border rounded"
-                    />
-                    <div className="flex items-center gap-2">
-                      <DatePicker
-                        selected={dueDate}
-                        onChange={(date) => setDueDate(date)}
-                        placeholderText="Add due date"
-                        className="border px-3 py-1 rounded w-full"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded"
-                        onClick={() => {
-                          console.log("New Task:", newTaskText, dueDate);
-                          setAddingTask(false);
-                          setNewTaskText('');
-                          setDueDate(null);
-                        }}
-                      >
-                        Add
-                      </button>
-                      <button
-                        className="border px-4 py-1 rounded hover:bg-gray-100"
-                        onClick={() => {
-                          setAddingTask(false);
-                          setNewTaskText('');
-                          setDueDate(null);
-                        }}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+          {addingTaskListId !== list.listId ? (
+  <button
+    className="flex items-center text-sm text-gray-500 hover:text-purple-600"
+    onClick={() => setAddingTaskListId(list.listId)}
+  >
+    <FaPlus className="mr-1" /> Add a task
+  </button>
+) : (
+  <div className="mt-2 space-y-2">
+    <input
+      type="text"
+      value={newTaskInputs[list.listId] || ''}
+      onChange={(e) =>
+        setNewTaskInputs({ ...newTaskInputs, [list.listId]: e.target.value })
+      }
+      placeholder="Add a new task..."
+      className="w-full p-2 border rounded"
+    />
+    <DatePicker
+      selected={dueDates[list.listId] || null}
+      onChange={(date) =>
+        setDueDates({ ...dueDates, [list.listId]: date })
+      }
+      placeholderText="Add due date"
+      className="border px-3 py-1 rounded w-full"
+    />
+    <div className="flex gap-2">
+      <button
+        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded"
+        onClick={() => handleCreateTask(list.listId)}
+      >
+        Add
+      </button>
+      <button
+        className="border px-4 py-1 rounded hover:bg-gray-100"
+        onClick={() => {
+          setAddingTaskListId(null);
+          setNewTaskInputs({ ...newTaskInputs, [list.listId]: '' });
+          setDueDates({ ...dueDates, [list.listId]: null });
+        }}
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
+
+          
             </div>
           ))}
         </div>

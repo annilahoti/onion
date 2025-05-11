@@ -64,11 +64,11 @@ public class TaskService : ITaskService
         var task = (await _taskRepository.GetTasks(taskId: updateTaskDto.TaskId)).FirstOrDefault();
         if (task == null) throw new Exception("Task not found");
 
-        if (updateTaskDto.DueDate.Date < DateTime.Today)
-        {
-            throw new Exception("Due date cannot be earlier than today");
-        }
-        
+   if (updateTaskDto.DueDate != DateTime.MinValue && updateTaskDto.DueDate.Date < DateTime.Today)
+{
+    throw new Exception("Due date cannot be earlier than today");
+}
+
         task.Title = updateTaskDto.Title;
         task.DueDate = updateTaskDto.DueDate;
 
@@ -77,35 +77,42 @@ public class TaskService : ITaskService
        
         return new TaskDto(updatedTask);
     }
-    public async Task<TaskDto> CreateTask(CreateTaskDto createTaskDto)
-    {
-        var accessesList = await _authorizationService.CanAccessList(_userContext.Id, createTaskDto.ListId);
-        if (!accessesList && _userContext.Role != "Admin") throw new Exception("You are not authorized");
-        
-        var list = (await _listRepository.GetLists(listId: createTaskDto.ListId)).FirstOrDefault();
-        if (list == null) throw new Exception("List not found");
-        
-        var existingTasks = (await _taskRepository.GetTasks(listId: createTaskDto.ListId))
-            .Where(t => !t.IsDeleted)
-            .ToList();
+   public async Task<TaskDto> CreateTask(CreateTaskDto createTaskDto)
+{
+    var accessesList = await _authorizationService.CanAccessList(_userContext.Id, createTaskDto.ListId);
+    if (!accessesList && _userContext.Role != "Admin")
+        throw new Exception("You are not authorized");
 
-        if (existingTasks.Count >= 100)
-        {
-            throw new Exception("You cannot have more than 100 tasks in this list");
-        }
-        
-        var newIndex = list.Tasks.Count(); 
-        var newTask = new Domain.Entities.Task(
-            newIndex,
-            createTaskDto.Title,
-            DateTime.Now,
-            createTaskDto.ListId,
-            false);
-        
-        var task = await _taskRepository.CreateTask(newTask);
-        
-        return new TaskDto(newTask);
-    }
+    var list = (await _listRepository.GetLists(listId: createTaskDto.ListId)).FirstOrDefault();
+    if (list == null)
+        throw new Exception("List not found");
+
+    var existingTasks = (await _taskRepository.GetTasks(listId: createTaskDto.ListId))
+        .Where(t => !t.IsDeleted)
+        .ToList();
+
+    if (existingTasks.Count >= 100)
+        throw new Exception("You cannot have more than 100 tasks in this list");
+
+    if (createTaskDto.DueDate != DateTime.MinValue && createTaskDto.DueDate.Date < DateTime.Today)
+    throw new Exception("Due date cannot be in the past");
+
+    var newIndex = list.Tasks.Count();
+
+    var newTask = new Domain.Entities.Task(
+        newIndex,
+        createTaskDto.Title,
+        DateTime.Now,
+        createTaskDto.DueDate,
+        createTaskDto.ListId,
+        false,
+        false
+    );
+
+    var task = await _taskRepository.CreateTask(newTask);
+
+    return new TaskDto(newTask);
+}
 
     public async Task<TaskDto> ChangeIndexTask(ChangeIndexTaskDto changeIndexTaskDto)
     {
@@ -173,4 +180,19 @@ public class TaskService : ITaskService
             return new TaskDto(updatedTask);
 
     }
+    public async Task<TaskDto> ToggleChecked(ToggleCheckedDto dto)
+    {
+    var task = (await _taskRepository.GetTasks(taskId: dto.TaskId)).FirstOrDefault();
+    if (task == null)
+        throw new Exception("Task not found");
+
+    if (!await _authorizationService.CanAccessTask(_userContext.Id, dto.TaskId))
+        throw new Exception("Unauthorized");
+
+    task.IsChecked = dto.IsChecked;
+    var updated = await _taskRepository.UpdateTask(task);
+
+    return new TaskDto(updated);
+}
+
 }

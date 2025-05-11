@@ -49,7 +49,9 @@ public class TaskRepository : ITaskRepository
         {
             throw new Exception("Task not found");
         }
-        _context.Entry(existingTask).CurrentValues.SetValues(task);
+        existingTask.Title = task.Title;
+        existingTask.DueDate = task.DueDate;
+
         await _context.SaveChangesAsync();
         return existingTask;
     }

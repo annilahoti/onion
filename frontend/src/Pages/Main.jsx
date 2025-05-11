@@ -33,7 +33,7 @@ const Main = () => {
         const updateUserInfoToken = async () => {
             try {
                 if (await !checkAndRefreshToken()){ //If invalid refresh
-                    navigate('/login');
+                    navigate('/preview');
                     return;
                 }
                 const accessToken = getAccessToken();
@@ -48,14 +48,14 @@ const Main = () => {
                         accessToken: decodedToken
                     });
                 } else {
-                    navigate('/login'); //If no access token exists
+                    navigate('/preview'); //If no access token exists
                     return;
                 }
             } catch (error) {
                 console.error("There has been an error, please log in again.");
                 document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
                 document.cookie = "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-                navigate('/login');
+                navigate('/preview');
             }
             
         }

@@ -16,14 +16,17 @@ public class Task
 
     public List List { get; set; }
 
+    public bool IsChecked { get; set; } = false;
     public Task() { }
 
-    public Task(int index, string title, DateTime dateCreated, int listId, bool isDeleted)
+    public Task(int index, string title, DateTime dateCreated, DateTime dueDate, int listId, bool isDeleted, bool isChecked)
     {
         Index = index;
         Title = title;
         DateCreated = dateCreated;
+        DueDate = dueDate;
         ListId = listId;
         IsDeleted = isDeleted;
+        IsChecked = isChecked;
     }
 }

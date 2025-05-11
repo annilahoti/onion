@@ -10,7 +10,7 @@ public class TaskDto
     public int Index { get; set; }
     public DateTime DueDate { get; set; }
     public DateTime DateAdded { get; set; }
-    
+    public bool IsChecked { get; set; } = false;
     public TaskDto(Task task)
     {
         TaskId = task.TaskId;
