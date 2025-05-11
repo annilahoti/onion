@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { validateAdmin, getAccessToken, ClearTokens } from '../Services/TokenService.jsx';
+import { getDataWithId, postData } from '../Services/FetchService.jsx';
+import { jwtDecode } from 'jwt-decode';
 import ModalProfile from '../Components/Modal/ModalProfile.jsx';
 import ModalChangePassword from '../Components/Modal/ModalChangePassword.jsx';
 import {
@@ -17,6 +19,8 @@ const Workspace = () => {
   const [modalProfileOpen, setModalProfileOpen] = useState(false);
   const [modalPasswordOpen, setModalPasswordOpen] = useState(false);
   const [showNewListModal, setShowNewListModal] = useState(false);
+  const [lists, setLists] = useState([]);
+  const [newListName, setNewListName] = useState('');
   const dropdownRef = useRef(null);
 
   const [addingTask, setAddingTask] = useState(false);
@@ -30,8 +34,10 @@ const Workspace = () => {
       navigate('/Preview');
       return;
     }
+
     const adminStatus = validateAdmin();
     setIsAdmin(adminStatus);
+    fetchLists();
 
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -44,9 +50,37 @@ const Workspace = () => {
     };
   }, [navigate]);
 
+  const fetchLists = async () => {
+    const token = getAccessToken();
+    const decoded = jwtDecode(token);
+    const ownerId = decoded.Id;
+
+    try {
+      const response = await getDataWithId('/GetListByOwnerId?ownerId', ownerId);
+      setLists(response.data);
+    } catch (error) {
+      console.error('Error fetching lists:', error);
+    }
+  };
+
   const handleLogout = () => {
     ClearTokens();
     navigate('/Preview');
+  };
+
+  const handleCreateList = async () => {
+    const token = getAccessToken();
+    const decoded = jwtDecode(token);
+    const ownerId = decoded.Id;
+
+    try {
+      await postData(`/CreateList?Title=${newListName}&OwnerId=${ownerId}`, null);
+      await fetchLists();
+      setShowNewListModal(false);
+      setNewListName('');
+    } catch (error) {
+      console.error('Error creating list:', error);
+    }
   };
 
   return (
@@ -94,102 +128,101 @@ const Workspace = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl shadow p-4 space-y-4">
-            {/* List Header */}
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <button><FaArrowLeft className="text-gray-500 hover:text-purple-600" /></button>
-                <button><FaArrowRight className="text-gray-500 hover:text-purple-600" /></button>
-                <h2 className="text-lg font-bold ml-2">list1</h2>
-              </div>
-              <button><FaTrash className="text-gray-400 hover:text-red-500" /></button>
-            </div>
-
-            {/* Example task */}
-            <div className="border rounded-lg p-3 space-y-2 bg-gray-50">
-  <div className="flex items-center space-x-2">
-    <input
-      type="checkbox"
-      checked={taskCompleted}
-      onChange={() => setTaskCompleted(!taskCompleted)}
-    />
-    <span
-      className={`flex-1 ${
-        taskCompleted ? 'line-through text-green-600' : ''
-      }`}
-    >
-      task1
-    </span>
-
-    <div className="flex flex-col items-center text-sm text-gray-500">
-      <button><FaArrowUp className="hover:text-purple-600" /></button>
-      <button><FaArrowDown className="hover:text-purple-600" /></button>
-    </div>
-
-    <div className="flex items-center gap-1 ml-4">
-      <FaCalendarAlt className="text-gray-500" />
-      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">May 1, 2025</span>
-    </div>
-
-    <button>
-      <FaTrash className="text-gray-400 hover:text-red-500 ml-2 cursor-pointer" />
-    </button>
-  </div>
-</div>
-
-            {/* Add Task Form */}
-            <div className="border-t pt-2">
-              {!addingTask ? (
-                <button
-                  className="flex items-center text-sm text-gray-500 hover:text-purple-600"
-                  onClick={() => setAddingTask(true)}
-                >
-                  <FaPlus className="mr-1" /> Add a task
-                </button>
-              ) : (
-                <div className="mt-2 space-y-2">
-                  <input
-                    type="text"
-                    value={newTaskText}
-                    onChange={(e) => setNewTaskText(e.target.value)}
-                    placeholder="Add a new task..."
-                    className="w-full p-2 border rounded"
-                  />
-                  <div className="flex items-center gap-2">
-                    <DatePicker
-                      selected={dueDate}
-                      onChange={(date) => setDueDate(date)}
-                      placeholderText="Add due date"
-                      className="border px-3 py-1 rounded w-full"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded"
-                      onClick={() => {
-                        console.log("New Task:", newTaskText, dueDate);
-                        setAddingTask(false);
-                        setNewTaskText('');
-                        setDueDate(null);
-                      }}
-                    >
-                      Add
-                    </button>
-                    <button
-                      className="border px-4 py-1 rounded hover:bg-gray-100"
-                      onClick={() => {
-                        setAddingTask(false);
-                        setNewTaskText('');
-                        setDueDate(null);
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
+          {lists.map((list, index) => (
+            <div key={index} className="bg-white rounded-xl shadow p-4 space-y-4">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <button><FaArrowLeft className="text-gray-500 hover:text-purple-600" /></button>
+                  <button><FaArrowRight className="text-gray-500 hover:text-purple-600" /></button>
+                  <h2 className="text-lg font-bold ml-2">{list.title}</h2>
                 </div>
-              )}
+                <button><FaTrash className="text-gray-400 hover:text-red-500" /></button>
+              </div>
+
+              {/* Tasks placeholder */}
+              <div className="border rounded-lg p-3 space-y-2 bg-gray-50">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={taskCompleted}
+                    onChange={() => setTaskCompleted(!taskCompleted)}
+                  />
+                  <span className={`flex-1 ${taskCompleted ? 'line-through text-green-600' : ''}`}>
+                    task1
+                  </span>
+
+                  <div className="flex flex-col items-center text-sm text-gray-500">
+                    <button><FaArrowUp className="hover:text-purple-600" /></button>
+                    <button><FaArrowDown className="hover:text-purple-600" /></button>
+                  </div>
+
+                  <div className="flex items-center gap-1 ml-4">
+                    <FaCalendarAlt className="text-gray-500" />
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                      May 1, 2025
+                    </span>
+                  </div>
+
+                  <button>
+                    <FaTrash className="text-gray-400 hover:text-red-500 ml-2 cursor-pointer" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Add Task Form */}
+              <div className="border-t pt-2">
+                {!addingTask ? (
+                  <button
+                    className="flex items-center text-sm text-gray-500 hover:text-purple-600"
+                    onClick={() => setAddingTask(true)}
+                  >
+                    <FaPlus className="mr-1" /> Add a task
+                  </button>
+                ) : (
+                  <div className="mt-2 space-y-2">
+                    <input
+                      type="text"
+                      value={newTaskText}
+                      onChange={(e) => setNewTaskText(e.target.value)}
+                      placeholder="Add a new task..."
+                      className="w-full p-2 border rounded"
+                    />
+                    <div className="flex items-center gap-2">
+                      <DatePicker
+                        selected={dueDate}
+                        onChange={(date) => setDueDate(date)}
+                        placeholderText="Add due date"
+                        className="border px-3 py-1 rounded w-full"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded"
+                        onClick={() => {
+                          console.log("New Task:", newTaskText, dueDate);
+                          setAddingTask(false);
+                          setNewTaskText('');
+                          setDueDate(null);
+                        }}
+                      >
+                        Add
+                      </button>
+                      <button
+                        className="border px-4 py-1 rounded hover:bg-gray-100"
+                        onClick={() => {
+                          setAddingTask(false);
+                          setNewTaskText('');
+                          setDueDate(null);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       </main>
 
@@ -217,12 +250,14 @@ const Workspace = () => {
             <h2 className="text-xl font-bold">Create New List</h2>
             <input
               type="text"
+              value={newListName}
+              onChange={(e) => setNewListName(e.target.value)}
               placeholder="List Name"
               className="w-full p-3 border rounded"
             />
             <div className="flex justify-end space-x-3">
               <button onClick={() => setShowNewListModal(false)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancel</button>
-              <button className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">Create List</button>
+              <button onClick={handleCreateList} className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">Create List</button>
             </div>
           </div>
         </div>
