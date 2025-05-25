@@ -213,6 +213,7 @@ const Preview = () => {
                 <input
                   type="text"
                   name="firstName"
+                  data-testid="firstName-input"
                   placeholder="First Name"
                   value={formData.firstName}
                   onChange={handleInputChange}
@@ -221,6 +222,7 @@ const Preview = () => {
                 <input
                   type="text"
                   name="lastName"
+                  data-testid="lastName-input"
                   placeholder="Last Name"
                   value={formData.lastName}
                   onChange={handleInputChange}
@@ -231,6 +233,7 @@ const Preview = () => {
             <input
               type="email"
               name="email"
+              data-testid="email-input"
               placeholder="Email"
               value={formData.email}
               onChange={handleInputChange}
@@ -239,6 +242,7 @@ const Preview = () => {
             <input
               type="password"
               name="password"
+              data-testid="password-input"
               placeholder="Password"
               value={formData.password}
               onChange={handleInputChange}
@@ -248,6 +252,7 @@ const Preview = () => {
               <input
                 type="password"
                 name="confirmPassword"
+                data-testid="confirmPassword-input"
                 placeholder="Confirm Password"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
@@ -259,6 +264,7 @@ const Preview = () => {
             )}
             <button
               type="submit"
+              data-testid={isSignUp ? 'signup-btn' : 'login-btn'}
               className="w-full py-4 text-white rounded-md text-lg font-bold"
               style={{ backgroundImage: 'linear-gradient(115deg, #7f00ff, #7928ca)' }}
             >

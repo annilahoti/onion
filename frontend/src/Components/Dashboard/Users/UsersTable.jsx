@@ -73,7 +73,7 @@ const UsersTable = () => {
 
             {/* Scrollable Table Container */}
             <div className="flex-grow max-h-[600px] overflow-y-auto">
-                <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <table data-testid="users-table" className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead className="sticky top-0 text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
                             <th className="px-6 py-3">First Name</th>
@@ -86,11 +86,12 @@ const UsersTable = () => {
                             <th className="px-6 py-3">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody data-testid="users-tbody">
                         {filteredUsers.length > 0 ? (
-                            filteredUsers.map((user, index) => (
+                            filteredUsers.map(user => (
                                 <tr
-                                    key={index}
+                                    key={user.id}
+                                    data-testid={`user-row-${user.id}`}
                                     className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                                 >
                                     <td className="px-6 py-4">{user.firstName}</td>
@@ -99,11 +100,12 @@ const UsersTable = () => {
                                     <td className="px-6 py-4">{user.dateCreated}</td>
                                     <td className="px-6 py-4">{user.id}</td>
                                     <td className="px-6 py-4">{user.role}</td>
-                                    <td className="px-6 py-4">{user.isDeleted+""}</td>
-                                    <td className="px-6 py-4">
+                                    <td  data-testid={`user-${user.id}-isDeleted`} className="px-6 py-4">{user.isDeleted+""}</td>
+                                    <td data-testid={`user-${user.id}-actions`} className="px-6 py-4">
                                       
                                         <UpdateContext.Provider value={user}>
                                             <UpdateUserButton
+                                              data-testid={`user-${user.id}-updateBtn`}
                                                 onClick={(e) => {
                                                     console.log("Update user pressed");
                                                 }}
@@ -113,6 +115,7 @@ const UsersTable = () => {
                                             onClick={(e) => {
                                                 handleUserDelete(user.id);
                                             }}
+                                             data-testid={`user-${user.id}-deleteBtn`}
                                             type="button"
                                             text="Delete"
                                             color="red"
@@ -122,7 +125,7 @@ const UsersTable = () => {
                             ))
                         ) : (
                             <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                <td className="px-6 py-4" colSpan={7}>No users found</td>
+                                <td className="px-6 py-4" colSpan={8}>No users found</td>
                             </tr>
                         )}
                     </tbody>
