@@ -352,6 +352,7 @@ const handleToggleChecked = async (taskId, isChecked) => {
           <button
             onClick={() => setShowNewListModal(true)}
             className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold text-sm shadow-md"
+            data-testid="new-list-btn"
           >
             <FaPlus /> New List
           </button>
@@ -388,10 +389,12 @@ const handleToggleChecked = async (taskId, isChecked) => {
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
               className="border px-2 py-1 rounded text-sm flex-grow"
+              data-testid="editing-title"
             />
             <button
               onClick={() => handleUpdateList(list.listId, editedTitle)}
               className="text-green-600 text-sm font-semibold"
+              data-testid="edit-save-btn"
             >
               Save
             </button>
@@ -413,6 +416,7 @@ const handleToggleChecked = async (taskId, isChecked) => {
               setEditedTitle(list.title);
             }}
             title="Click to rename"
+            data-testid="list-title"
           >
             {list.title}
           </h2>
@@ -423,6 +427,7 @@ const handleToggleChecked = async (taskId, isChecked) => {
       <button
         onClick={() => handleDeleteList(list.listId)}
         title="Delete list"
+        data-testid="delete-list-btn"
       >
         <FaTrash className="text-gray-400 hover:text-red-500 ml-2" />
       </button>
@@ -621,11 +626,12 @@ const handleToggleChecked = async (taskId, isChecked) => {
               value={newListName}
               onChange={(e) => setNewListName(e.target.value)}
               placeholder="List Name"
+              name="list-name"
               className="w-full p-3 border rounded"
             />
             <div className="flex justify-end space-x-3">
               <button onClick={() => setShowNewListModal(false)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancel</button>
-              <button onClick={handleCreateList} className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">Create List</button>
+              <button onClick={handleCreateList} className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700" data-testid="create-list">Create List</button>
             </div>
           </div>
         </div>
