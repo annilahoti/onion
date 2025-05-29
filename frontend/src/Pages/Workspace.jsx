@@ -448,63 +448,44 @@ const handleToggleChecked = async (taskId, isChecked) => {
       return (
  <div key={task.taskId} className="flex justify-between items-center border p-2 rounded bg-gray-50">
   {editingTaskId === task.taskId ? (
-    <div className="flex flex-col gap-2 w-full">
-      <input
-        value={editedTaskTitle}
-        onChange={(e) => setEditedTaskTitle(e.target.value)}
-        className="border p-1 rounded"
-      />
-      <DatePicker
-        selected={editedTaskDueDate}
-        onChange={(date) => setEditedTaskDueDate(date)}
-        className="border p-1 rounded"
-        placeholderText="Due date"
-      />
-      <div className="flex gap-2">
-        <button
-          onClick={() => handleUpdateTask(task.taskId)}
-          className="bg-green-500 text-white px-2 py-1 rounded"
-        >
-          Save
-        </button>
-        <button
-          onClick={() => setEditingTaskId(null)}
-          className="text-sm underline"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  ) : (
-    <div className="flex items-center gap-2 flex-1">
-    
-      <input
-        type="checkbox"
-        checked={task.isChecked}
-        onChange={(e) => handleToggleChecked(task.taskId, e.target.checked)}
-        className="form-checkbox h-5 w-5 text-green-600"
-      />
-
-      {/* ✅ Task title with green line-through if checked */}
-      <span
-       className={`cursor-pointer text-base font-medium flex-1 ${
-    task.isChecked ? 'text-green-600 line-through' : 'text-gray-800'
-        }`}
-        onClick={() => {
-          setEditingTaskId(task.taskId);
-          setEditedTaskTitle(task.title);
-          setEditedTaskDueDate(
-            task.dueDate !== '0001-01-01T00:00:00'
-              ? new Date(task.dueDate)
-              : null
-          );
-        }}
-        title="Click to edit"
+  <div className="flex flex-col gap-2 w-full" data-testid="edit-task-form">
+    <input
+      value={editedTaskTitle}
+      onChange={(e) => setEditedTaskTitle(e.target.value)}
+      className="border p-1 rounded"
+      data-testid="edit-task-input"
+    />
+    <div className="flex gap-2">
+      <button
+        onClick={() => handleUpdateTask(task.taskId)}
+        className="bg-green-500 text-white px-2 py-1 rounded"
+        data-testid="save-task-btn"
       >
-        {task.title}
-      </span>
+        Save
+      </button>
+      <button
+        onClick={() => setEditingTaskId(null)}
+        className="text-sm underline"
+        data-testid="cancel-edit-btn"
+      >
+        Cancel
+      </button>
     </div>
-  )}
+  </div>
+) : (
+  <span
+    className={`cursor-pointer text-base font-medium flex-1 ${
+      task.isChecked ? 'text-green-600 line-through' : 'text-gray-800'
+    }`}
+    onClick={() => {
+      setEditingTaskId(task.taskId);
+      setEditedTaskTitle(task.title);
+    }}
+    data-testid="task-text"
+  >
+    {task.title}
+  </span>
+)}
 
   {/* Due date and controls */}
   <div className="flex items-center gap-2">
@@ -531,6 +512,7 @@ const handleToggleChecked = async (taskId, isChecked) => {
     <button
       onClick={() => handleDeleteTask(task.taskId)}
       title="Delete task"
+      data-testid="delete-task-btn"
     >
       <FaTrash className="text-gray-400 hover:text-red-500 ml-3" />
     </button>
@@ -545,11 +527,12 @@ const handleToggleChecked = async (taskId, isChecked) => {
 
 </div>
 
-              {/* Add Task Form */}
-          {addingTaskListId !== list.listId ? (
+{/* Add Task Form */}
+{addingTaskListId !== list.listId ? (
   <button
     className="flex items-center text-sm text-gray-500 hover:text-purple-600"
     onClick={() => setAddingTaskListId(list.listId)}
+    data-testid="add-task-btn"  // Simplified test ID
   >
     <FaPlus className="mr-1" /> Add a task
   </button>
@@ -558,24 +541,23 @@ const handleToggleChecked = async (taskId, isChecked) => {
     <input
       type="text"
       value={newTaskInputs[list.listId] || ''}
-      onChange={(e) =>
-        setNewTaskInputs({ ...newTaskInputs, [list.listId]: e.target.value })
-      }
+      onChange={(e) => setNewTaskInputs({ ...newTaskInputs, [list.listId]: e.target.value })}
       placeholder="Add a new task..."
       className="w-full p-2 border rounded"
+      data-testid="task-title-input"
     />
     <DatePicker
       selected={dueDates[list.listId] || null}
-      onChange={(date) =>
-        setDueDates({ ...dueDates, [list.listId]: date })
-      }
+      onChange={(date) => setDueDates({ ...dueDates, [list.listId]: date })}
       placeholderText="Add due date"
       className="border px-3 py-1 rounded w-full"
+      data-testid="task-due-date-input"
     />
     <div className="flex gap-2">
       <button
         className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded"
         onClick={() => handleCreateTask(list.listId)}
+        data-testid="submit-task-btn"
       >
         Add
       </button>
@@ -586,6 +568,7 @@ const handleToggleChecked = async (taskId, isChecked) => {
           setNewTaskInputs({ ...newTaskInputs, [list.listId]: '' });
           setDueDates({ ...dueDates, [list.listId]: null });
         }}
+        data-testid="cancel-task-btn"
       >
         Cancel
       </button>
