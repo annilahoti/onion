@@ -94,61 +94,100 @@ public class TaskTests : BaseTest
         Assert.IsFalse(taskText.GetAttribute("class").Contains("line-through"), "Task should no longer show completed style");
     }
 
-    [Test, Order(4)]
-    public void EditTask_ShouldUpdateTitle()
-    {
-        var timestamp = DateTime.Now.ToString("HHmmss");
-        var originalName = $"Task {timestamp}";
-        var newName = $"EDITED {timestamp}";
-        var taskId = CreateTestTask(originalName);
-
-        var taskText = wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector($"[data-testid='task-text-{taskId}']")));
-        taskText.Click();
-
-        var editInput = wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("[data-testid='edit-task-input']")));
-        editInput.Clear();
-        editInput.SendKeys(newName);
-
-        var saveBtn = wait.Until(ExpectedConditions.ElementToBeClickable(By.CssSelector("[data-testid='save-task-btn']")));
-        saveBtn.Click();
-
-        wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.CssSelector(".swal2-container")));
-
-        var updatedTask = wait.Until(driver =>
+   [Test, Order(4)]
+        public void EditTask_ShouldUpdateTitle()
         {
-            var tasks = driver.FindElements(By.CssSelector("[data-testid='task-text']"));
-            return tasks.FirstOrDefault(t => t.Text == newName);
-        });
+            // Create a unique task
+            var timestamp = DateTime.Now.ToString("HHmmss");
+            var originalName = $"Task {timestamp}";
 
-        Assert.IsNotNull(updatedTask, $"Task text did not change to '{newName}'");
-        Assert.IsFalse(Driver.FindElements(By.CssSelector("[data-testid='task-text']")).Any(t => t.Text == originalName), "Old task title still exists");
-    }
+            // Create the task
+            Driver.FindElement(By.CssSelector("[data-testid='add-task-btn']")).Click();
+            Thread.Sleep(500);
+            Driver.FindElement(By.CssSelector("[data-testid='task-title-input']")).SendKeys(originalName);
+            Thread.Sleep(500);
+            Driver.FindElement(By.CssSelector("[data-testid='submit-task-btn']")).Click();
+            Thread.Sleep(1000); // Wait for creation
 
-    private void LoginAndCreateTestList()
-    {
-        Driver.Navigate().GoToUrl(PreviewUrl);
+            // Find the task we just created
+            var allTaskSpans = Driver.FindElements(By.CssSelector("span[data-testid^='task-toggle-']"));
+            var targetSpan = allTaskSpans.FirstOrDefault(span => span.Text == originalName);
+            Assert.IsNotNull(targetSpan, "Newly created task not found");
 
-        Driver.FindElement(By.Name("email")).SendKeys("endrit@musaj.com");
-        Driver.FindElement(By.Name("password")).SendKeys("Endrit123456!");
-        Driver.FindElement(By.CssSelector("[data-testid='login-btn']")).Click();
+            // Extract the task ID from the data-testid attribute
+            var testIdAttr = targetSpan.GetAttribute("data-testid");
+            var taskId = testIdAttr.Replace("task-toggle-", "");
 
-        wait.Until(d => d.Url.Contains("/main/workspace"));
-        Driver.Navigate().GoToUrl(WorkspaceUrl);
-        wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("[data-testid='new-list-btn']")));
+            // Click to edit
+            targetSpan.Click();
+            Thread.Sleep(500); // Wait for edit form
 
-        if (!isTestListCreated)
+            // Edit the title
+            var newName = $"EDITED {timestamp}";
+            var editInput = Driver.FindElement(By.CssSelector("[data-testid='edit-task-input']"));
+            editInput.Clear();
+            Thread.Sleep(200);
+            editInput.SendKeys(newName);
+            Thread.Sleep(200);
+
+            // Save changes
+            Driver.FindElement(By.CssSelector("[data-testid='save-task-btn']")).Click();
+            Thread.Sleep(1000); // Wait for save
+
+            // Verify update
+            var updatedTask = Driver.FindElements(By.CssSelector("span[data-testid^='task-toggle-']"))
+                .FirstOrDefault(t => t.Text == newName);
+
+            Assert.IsNotNull(updatedTask, $"Task text did not change to '{newName}'");
+            Assert.IsFalse(Driver.FindElements(By.CssSelector("span[data-testid^='task-toggle-']"))
+                .Any(t => t.Text == originalName), "Old task title still exists");
+        }
+        private void LoginAndCreateTestList()
         {
-            var exists = Driver.FindElements(By.CssSelector("[data-testid='list-title']")).Any(e => e.Text.Contains(testListName));
-            if (!exists)
+            Driver.Navigate().GoToUrl(PreviewUrl);
+
+            Driver.FindElement(By.Name("email")).SendKeys("endrit@musaj.com");
+            Driver.FindElement(By.Name("password")).SendKeys("Endrit123456!");
+            Driver.FindElement(By.CssSelector("[data-testid='login-btn']")).Click();
+
+            wait.Until(d => d.Url.Contains("/main/workspace"));
+            Driver.Navigate().GoToUrl(WorkspaceUrl);
+            wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("[data-testid='new-list-btn']")));
+
+            if (!isTestListCreated)
             {
-                Driver.FindElement(By.CssSelector("[data-testid='new-list-btn']")).Click();
-                Driver.FindElement(By.Name("list-name")).SendKeys(testListName);
-                wait.Until(ExpectedConditions.ElementToBeClickable(By.CssSelector("[data-testid='create-list']"))).Click();
-                wait.Until(d => d.FindElements(By.CssSelector("[data-testid='list-title']")).Any(el => el.Text.Contains(testListName)));
-                isTestListCreated = true;
+                var exists = Driver.FindElements(By.CssSelector("[data-testid='list-title']")).Any(e => e.Text.Contains(testListName));
+                if (!exists)
+                {
+                    Driver.FindElement(By.CssSelector("[data-testid='new-list-btn']")).Click();
+                    Driver.FindElement(By.Name("list-name")).SendKeys(testListName);
+                    wait.Until(ExpectedConditions.ElementToBeClickable(By.CssSelector("[data-testid='create-list']"))).Click();
+                    wait.Until(d => d.FindElements(By.CssSelector("[data-testid='list-title']")).Any(el => el.Text.Contains(testListName)));
+                    isTestListCreated = true;
+                }
             }
         }
-    }
+
+        // [Test, Order(5)]
+        // public void DeleteTask_ShouldRemoveFromList()
+        // {
+        //     var taskName = $"Test Task {DateTime.Now:HHmmss}";
+        //     var taskId = CreateTestTask(taskName);
+
+        //     var taskElement = wait.Until(ExpectedConditions.ElementExists(
+        //         By.CssSelector($"[data-testid='task-container-{taskId}']")));
+
+        //     var deleteBtn = taskElement.FindElement(By.CssSelector("[data-testid='delete-task-btn']"));
+        //     deleteBtn.Click();
+
+        //     // Konfirmo SweetAlert dialogun
+        //     wait.Until(ExpectedConditions.ElementToBeClickable(By.CssSelector(".swal2-confirm"))).Click();
+
+        //     wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.CssSelector(".swal2-container")));
+
+        //     var remainingTasks = Driver.FindElements(By.CssSelector($"[data-testid='task-container-{taskId}']"));
+        //     Assert.IsTrue(remainingTasks.Count == 0, $"❌ Task with ID '{taskId}' was not deleted properly.");
+        // }
 
     private void DeleteTestList()
     {
@@ -188,23 +227,37 @@ public class TaskTests : BaseTest
         OpenFirstList();
         CreateTask(taskName);
 
-        var taskElement = new WebDriverWait(Driver, TimeSpan.FromSeconds(30))
-            .Until(d =>
-            {
-                var tasks = d.FindElements(By.CssSelector("[data-testid^='task-container-']"));
-                return tasks.FirstOrDefault(t => t.Text.Contains(taskName));
-            });
 
-        if (taskElement == null)
+        var customWait = new WebDriverWait(Driver, TimeSpan.FromSeconds(30));
+
+        IWebElement taskElement = null;
+
+        try
         {
-            Console.WriteLine("❌ Task not found. Tasks visible:");
-            foreach (var task in Driver.FindElements(By.CssSelector("[data-testid^='task-container-']")))
+            taskElement = customWait.Until(driver =>
             {
-                Console.WriteLine(" - " + task.Text);
+                var tasks = driver.FindElements(By.CssSelector("[data-testid^='task-container-']"));
+                return tasks.FirstOrDefault(t => t.Text.Trim().Contains(taskName));
+            });
+        }
+        catch (WebDriverTimeoutException)
+        {
+            Console.WriteLine("❌ Task not found. Listing visible tasks for debug:");
+            foreach (var el in Driver.FindElements(By.CssSelector("[data-testid^='task-container-']")))
+            {
+                Console.WriteLine(" - " + el.Text);
             }
+
+            throw;
         }
 
-        Assert.IsNotNull(taskElement, $"Task with name '{taskName}' was not found after creation.");
-        return taskElement.GetAttribute("data-testid").Replace("task-container-", "");
+        Assert.IsNotNull(taskElement, $"❌ Task with name '{taskName}' was not found after creation.");
+
+        var taskId = taskElement.GetAttribute("data-testid").Replace("task-container-", "");
+
+        wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector($"[data-testid='task-text-{taskId}']")));
+
+        return taskId;
     }
+
 }

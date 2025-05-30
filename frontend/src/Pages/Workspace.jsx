@@ -475,12 +475,12 @@ const handleToggleChecked = async (taskId, isChecked) => {
 ) : (
   <div className="flex items-center gap-2 flex-1">
       <input
-        type="checkbox"
-        checked={task.isChecked}
-        onChange={(e) => handleToggleChecked(task.taskId, e.target.checked)}
-        className="form-checkbox h-5 w-5 text-green-600"
-      />
-
+  type="checkbox"
+  checked={task.isChecked}
+  onChange={(e) => handleToggleChecked(task.taskId, e.target.checked)}
+  className="form-checkbox h-5 w-5 text-green-600"
+  data-testid={`task-checkbox-${task.taskId}`}
+/>
   <span
     className={`cursor-pointer text-base font-medium flex-1 ${
       task.isChecked ? 'text-green-600 line-through' : 'text-gray-800'
