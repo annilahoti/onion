@@ -1,12 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Application\\Services",
-    "\\Application\\Services\\List",
-    "\\Domain",
     "\\Domain\\Entities",
-    "\\Domain\\Interfaces"
+    "\\Infrastructure",
+    "\\SeleniumTests"
   ],
-  "SelectedNode": "\\Domain\\Domain.csproj",
+  "SelectedNode": "\\Infrastructure\\infrastructureSettings.json",
   "PreviewInSolutionExplorer": false
 }
