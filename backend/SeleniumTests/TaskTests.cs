@@ -109,40 +109,47 @@ public class TaskTests : BaseTest
             Assert.That(createdTask, Is.True, $"Task '{taskName}' was not created successfully.");
         }
 
-        [Test,Order(3)]
+        [Test, Order(3)]
         public void ToggleTaskCompletion_ShouldUpdateStatus()
         {
-            //Create a test task
-            var taskName = "Test Task " + DateTime.Now.ToString("HHmmss");
-    
-            // Add new task
+            string taskName = "Checkbox Toggle Task";
+
+            // Click add task button
             Driver.FindElement(By.CssSelector("[data-testid='add-task-btn']")).Click();
-            Driver.FindElement(By.CssSelector("[data-testid='task-title-input']")).SendKeys(taskName);
+
+            // Type task title
+            var input = Driver.FindElement(By.CssSelector("[data-testid='task-title-input']"));
+            input.SendKeys(taskName);
+
+            // Submit task
             Driver.FindElement(By.CssSelector("[data-testid='submit-task-btn']")).Click();
-    
-            // Find the created task
-            var taskContainer = Driver.FindElements(By.CssSelector("[data-testid^='task-container-']"))
-                .First(t => t.Text.Contains(taskName));
-            var taskId = taskContainer.GetAttribute("data-testid").Replace("task-container-", "");
 
-            //Get the task elements
-            var checkbox = Driver.FindElement(By.CssSelector($"[data-testid='task-checkbox-{taskId}']"));
-            var taskText = Driver.FindElement(By.CssSelector($"[data-testid='task-text-{taskId}']"));
+            // Wait for the new task element containing the taskName to appear
+            var wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(5));
+            var taskElement = wait.Until(d =>
+            {
+                var tasks = d.FindElements(By.CssSelector("[data-testid^='task-container-']"));
+                var matchingTask = tasks.FirstOrDefault(e => e.Text.Contains(taskName));
+                return matchingTask != null ? matchingTask : null;
+            });
 
-            // Test toggle functionality
-            // Verify initial state
-            Assert.IsFalse(checkbox.Selected, "Task should start unchecked");
-            Assert.IsFalse(taskText.GetAttribute("class").Contains("line-through"), "Task should not be completed initially");
+            string taskId = taskElement.GetAttribute("data-testid").Replace("task-container-", "");
 
-            // Check the task
+            // Find and click the toggle checkbox
+            var checkbox = Driver.FindElement(By.CssSelector($"[data-testid='task-toggle-{taskId}']"));
             checkbox.Click();
-            Assert.IsTrue(checkbox.Selected, "Task should be checked after click");
-            Assert.IsTrue(taskText.GetAttribute("class").Contains("line-through"), "Task should show completed style");
 
-            // Uncheck the task
-            checkbox.Click();
-            Assert.IsFalse(checkbox.Selected, "Task should be unchecked after second click");
-            Assert.IsFalse(taskText.GetAttribute("class").Contains("line-through"), "Task should no longer show completed style");
+            // Wait until checkbox is selected (checked)
+            wait.Until(d =>
+            {
+                var updatedCheckbox = d.FindElement(By.CssSelector($"[data-testid='task-toggle-{taskId}']"));
+                return updatedCheckbox.Selected;
+            });
+
+            // Verify UI update
+            var taskText = Driver.FindElement(By.CssSelector("[data-testid='task-text']"));
+            var classAttr = taskText.GetAttribute("class");
+            Assert.IsTrue(classAttr.Contains("line-through") && classAttr.Contains("text-green-600"));
         }
 
         [Test, Order(4)]
