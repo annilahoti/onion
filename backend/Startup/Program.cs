@@ -1,6 +1,5 @@
 using System.Reflection;
 using Application;
-using Application.Handlers;
 using Application.Services;
 using Application.Services.Authorization;
 using Application.Services.List;

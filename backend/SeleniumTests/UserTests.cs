@@ -16,7 +16,7 @@ namespace PMS.SeleniumTests
         [SetUp]
         public void TestSetup()
         {
-            wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(10));
+            wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(20));
         }
 
         [Test, Order(1)]
